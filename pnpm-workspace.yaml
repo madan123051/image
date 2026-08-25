@@ -2,4 +2,5 @@ allowBuilds:
   '@firebase/util': false
   core-js: true
   core-js-pure: true
+  esbuild: true
   protobufjs: false

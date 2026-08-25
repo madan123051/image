@@ -1,36 +1,75 @@
 import { useState, type FormEvent } from 'react';
-import type { CalendarEvent, PlannerTask } from '../types/domain';
-import { addDays, isSameDay } from '../utils/date';
+import type { AppData, Language } from '../types/domain';
+import type { AssistantAction, AssistantResponse } from '../services/assistantSchema';
+import { requestWildsauraAssistant } from '../services/assistantService';
+import { AssistantActionList } from './AssistantActionList';
 
-interface AIAssistantProps { events: CalendarEvent[]; tasks: PlannerTask[]; onOpenPlanner(): void; }
+interface AIAssistantProps {
+  data: AppData;
+  userId: string;
+  language: Language;
+  onApply(actions: AssistantAction[]): { applied: number; errors: string[] };
+  onOpenPlanner(): void;
+}
 
-export function AIAssistant({ events, tasks, onOpenPlanner }: AIAssistantProps) {
+export function AIAssistant({ data, userId, language, onApply, onOpenPlanner }: AIAssistantProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [answer, setAnswer] = useState('Ask about free time, upcoming events, or request a schedule preview.');
+  const [response, setResponse] = useState<AssistantResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [applyMessage, setApplyMessage] = useState('');
 
-  const route = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const query = input.toLowerCase();
-    if (query.includes('doctor')) {
-      const doctor = events.find((item) => item.title.toLowerCase().includes('doctor'));
-      setAnswer(doctor ? `Your next doctor appointment is ${new Date(doctor.startDateTime).toLocaleString()}.` : 'I could not find a doctor appointment.');
-    } else if (query.includes('tomorrow') && query.includes('free')) {
-      const tomorrow = addDays(new Date(), 1);
-      const count = events.filter((item) => isSameDay(item.startDateTime, tomorrow)).length;
-      setAnswer(count ? `You have ${count} event${count === 1 ? '' : 's'} tomorrow. Open Planner for safe free-time options.` : 'Tomorrow is currently open during your planning hours.');
-    } else if (query.includes('busiest')) {
-      const grouped = events.reduce<Record<string, number>>((map, item) => { const key = new Date(item.startDateTime).toDateString(); map[key] = (map[key] ?? 0) + 1; return map; }, {});
-      const busiest = Object.entries(grouped).sort((a, b) => b[1] - a[1])[0];
-      setAnswer(busiest ? `${busiest[0]} is busiest with ${busiest[1]} events.` : 'There are no events to compare.');
-    } else if (query.includes('move') || query.includes('schedule') || query.includes('plan')) {
-      setAnswer(`I can prepare a proposal using ${tasks.filter((task) => task.status !== 'completed').length} open tasks. Nothing will move until you approve it in Planner.`);
-    } else setAnswer('I can search the current schedule locally. Connect an AI provider later for broader natural-language reasoning.');
-    setInput('');
+    const prompt = input.trim();
+    if (!prompt || loading) return;
+    setLoading(true);
+    setError('');
+    setApplyMessage('');
+    try {
+      setResponse(await requestWildsauraAssistant(prompt, data, userId));
+      setInput('');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Wildsaura could not answer right now.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const apply = () => {
+    if (!response?.actions.length) return;
+    const result = onApply(response.actions);
+    setApplyMessage(result.errors.length
+      ? `${result.applied} applied · ${result.errors.join(' ')}`
+      : `${result.applied} change${result.applied === 1 ? '' : 's'} saved to Firebase.`);
+    if (!result.errors.length) setResponse({ ...response, actions: [], requiresConfirmation: false });
+  };
+
+  const intro = language === 'ne'
+    ? 'कार्यक्रम, कार्य, सम्झना वा दिनचर्या बनाउन, सार्न वा योजना बनाउन आदेश दिनुहोस्।'
+    : 'Command me to create, move, plan, update, or remove events, tasks, reminders, and routines.';
+
   return <div className={`assistant ${open ? 'open' : ''}`}>
-    {open && <section className="assistant-panel" aria-label="Wildsaura AI assistant"><header><span>✦</span><div><strong>Wildsaura assistant</strong><small>Approval-first command router</small></div><button className="icon-button" type="button" onClick={() => setOpen(false)}>×</button></header><div className="assistant-answer">{answer}</div><div className="assistant-suggestions"><button type="button" onClick={() => setInput("What's free tomorrow?")}>What’s free tomorrow?</button><button type="button" onClick={() => setInput('When is my next doctor appointment?')}>Next doctor appointment</button></div><form onSubmit={route}><input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask Wildsaura…" /><button type="submit" aria-label="Send">↑</button></form><button className="assistant-planner-link" type="button" onClick={() => { setOpen(false); onOpenPlanner(); }}>Open full AI Planner →</button></section>}
-    <button className="assistant-button" type="button" onClick={() => setOpen(!open)} aria-label="Open AI assistant">{open ? '×' : '✦'}</button>
+    {open ? <section className="assistant-panel" aria-label="Wildsaura AI assistant">
+      <header><span>✦</span><div><strong>Wildsaura assistant</strong><small>Gemini · approval-first commands</small></div><button className="icon-button" type="button" onClick={() => setOpen(false)} aria-label="Close assistant">×</button></header>
+      <div className="assistant-answer" aria-live="polite">
+        <p>{response?.reply ?? intro}</p>
+        {response?.actions.length ? <AssistantActionList actions={response.actions} compact /> : null}
+        {response?.warnings.map((warning) => <small className="assistant-warning" key={warning}>{warning}</small>)}
+        {error ? <small className="assistant-error" role="alert">{error}</small> : null}
+        {applyMessage ? <small className="assistant-success">{applyMessage}</small> : null}
+      </div>
+      {response?.actions.length ? <div className="assistant-approval">
+        <button className="secondary-button" type="button" onClick={() => setResponse(null)}>Discard</button>
+        <button className="primary-button" type="button" onClick={apply}>Apply {response.actions.length} change{response.actions.length === 1 ? '' : 's'}</button>
+      </div> : <div className="assistant-suggestions">
+        <button type="button" onClick={() => setInput('Plan my unfinished tasks into free time this week.')}>Plan my week</button>
+        <button type="button" onClick={() => setInput('Create a reminder tomorrow at 9 AM to call family.')}>Create reminder</button>
+      </div>}
+      <form onSubmit={submit}><input value={input} onChange={(event) => setInput(event.target.value)} placeholder={language === 'ne' ? 'Wildsaura लाई आदेश दिनुहोस्…' : 'Command Wildsaura…'} maxLength={2_000} /><button type="submit" aria-label="Send" disabled={loading || !input.trim()}>{loading ? '…' : '↑'}</button></form>
+      <button className="assistant-planner-link" type="button" onClick={() => { setOpen(false); onOpenPlanner(); }}>Open full AI Planner →</button>
+    </section> : null}
+    <button className="assistant-button" type="button" onClick={() => setOpen((current) => !current)} aria-label={open ? 'Close AI assistant' : 'Open AI assistant'} aria-expanded={open}>{open ? '×' : '✦'}</button>
   </div>;
 }

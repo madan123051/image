@@ -19,6 +19,8 @@ import { SharedPage } from './pages/SharedPage';
 import { TasksPage } from './pages/TasksPage';
 import { TodayPage } from './pages/TodayPage';
 import { searchAll } from './services/searchService';
+import { applyAssistantActions } from './services/assistantActionService';
+import type { AssistantAction } from './services/assistantSchema';
 import type { AppSection, SearchResult } from './types/domain';
 import { toDateKey } from './utils/date';
 
@@ -168,11 +170,24 @@ function App() {
     if (result.type === 'task') editTask(result.id);
   };
 
+  const applyAIChanges = (actions: AssistantAction[]) => applyAssistantActions(actions, {
+    data: store.data,
+    userId: store.userId,
+    saveEvent: store.saveEvent,
+    deleteEvent: store.deleteEvent,
+    saveTask: store.saveTask,
+    deleteTask: store.deleteTask,
+    saveReminder: store.saveReminder,
+    deleteReminder: store.deleteReminder,
+    saveRoutine: store.saveRoutine,
+    deleteRoutine: store.deleteRoutine,
+  });
+
   const page = (() => {
     if (section === 'today') return <TodayPage data={store.data} userId={store.userId} language={store.language} labels={labels} onOpenCalendar={() => navigate('calendar')} onOpenTasks={() => navigate('tasks')} onEditEvent={editEvent} onToggleTask={store.toggleTask} />;
     if (section === 'calendar') return <CalendarPage events={events} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onNewEvent={newEvent} onEditEvent={editEvent} onSaveEvent={store.saveEvent} />;
     if (section === 'tasks') return <TasksPage tasks={tasks} events={events} routines={routines} preferences={preferences} labels={labels} onNewTask={newTask} onEditTask={editTask} onToggleTask={store.toggleTask} onSaveTask={store.saveTask} />;
-    if (section === 'planner') return <PlannerPage events={events} tasks={tasks} routines={routines} preferences={preferences} labels={labels} onApply={store.applyProposal} />;
+    if (section === 'planner') return <PlannerPage data={store.data} userId={store.userId} labels={labels} onApply={applyAIChanges} />;
     if (section === 'reminders') return <RemindersPage reminders={reminders} routines={routines} labels={labels} onAddReminder={newReminder} onEditReminder={editReminder} onCompleteReminder={store.completeReminder} onSnoozeReminder={store.snoozeReminder} onAddRoutine={newRoutine} onEditRoutine={editRoutine} onToggleRoutine={store.toggleRoutine} />;
     if (section === 'shared') return <SharedPage calendars={calendars} labels={labels} />;
     if (section === 'insights') return <InsightsPage events={events} tasks={tasks} routines={routines} labels={labels} />;
@@ -189,7 +204,7 @@ function App() {
     <QuickAddDialog open={quickAddOpen} userId={store.userId} labels={labels} events={events} tasks={tasks} routines={routines} preferences={preferences} calendars={calendars} onClose={() => setQuickAddOpen(false)} onOpenEvent={() => newEvent()} onOpenTask={newTask} onOpenReminders={newReminder} onOpenRoutines={newRoutine} onSaveEvent={store.saveEvent} />
     <ReminderDialog open={reminderDialogOpen} reminder={selectedReminder} userId={store.userId} timezone={preferences.timezone} onClose={() => setReminderDialogOpen(false)} onSave={store.saveReminder} onDelete={store.deleteReminder} />
     <RoutineDialog open={routineDialogOpen} routine={selectedRoutine} userId={store.userId} onClose={() => setRoutineDialogOpen(false)} onSave={store.saveRoutine} onDelete={store.deleteRoutine} />
-    <AIAssistant events={events} tasks={tasks} onOpenPlanner={() => navigate('planner')} />
+    <AIAssistant data={store.data} userId={store.userId} language={store.language} onApply={applyAIChanges} onOpenPlanner={() => navigate('planner')} />
   </>;
 }
 
