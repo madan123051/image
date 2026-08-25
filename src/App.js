@@ -1,12 +1,3 @@
-import React from 'react';
-
 function App() {
-  return (
-    <div>
-      <h1>My Calendar App</h1>
-      {/* Your calendar UI here */}
-    </div>
-  );
+  return <h1>My Calendar App</h1>;
 }
-
-export default App;
