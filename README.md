@@ -1,6 +1,6 @@
 # Image Project
 
-A Vercel-ready React + TypeScript application.
+A responsive, accessible monthly calendar built with React.
 
 ## 🚀 Quick Start
 
@@ -22,11 +22,13 @@ calendar-app/
 ├── public/
 │   └── index.html
 ├── src/
-│   ├── App.tsx
-│   ├── index.tsx
-│   └── styles.css
+│   ├── App.js
+│   ├── calendar.js
+│   ├── calendar.test.js
+│   ├── index.js
+│   └── index.css
 ├── package.json
-└── vercel.json
+└── README.md
 ```
 
 ## 🌐 Live Demo
@@ -35,7 +37,7 @@ Visit the deployed app: https://image-peach-ten-25.vercel.app
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React + TypeScript
+- **Frontend**: React
 - **Styling**: CSS
 - **Deployment**: Vercel
 - **Build Tool**: Standard React build setup
