@@ -2,12 +2,15 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-describe('App language switcher', () => {
+describe('Wildsaura application shell', () => {
   let container;
   let root;
 
   beforeEach(() => {
     global.IS_REACT_ACT_ENVIRONMENT = true;
+    window.matchMedia = window.matchMedia || (() => ({ matches: false, addListener: () => {}, removeListener: () => {} }));
+    window.scrollTo = () => {};
+    window.location.hash = '';
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -18,33 +21,23 @@ describe('App language switcher', () => {
     container.remove();
   });
 
-  it('switches from the Gregorian calendar to a localized Bikram Sambat calendar', () => {
-    act(() =>
-      root.render(
-        React.createElement(App, { initialDate: new Date(2024, 6, 24) })
-      )
-    );
+  it('renders Today and switches the language with its calendar system', () => {
+    act(() => root.render(<App />));
+    expect(container.querySelector('.today-page h1').textContent).toContain('Good to see you');
+    expect(container.querySelectorAll('.summary-strip > *')).toHaveLength(4);
 
-    expect(container.querySelector('.month-heading h2').textContent).toBe(
-      'July 2024'
-    );
-    expect(container.querySelectorAll('.calendar-day')).toHaveLength(31);
-
-    const nepaliButton = Array.from(container.querySelectorAll('button')).find(
-      (button) => button.textContent === 'नेपाली'
-    );
-
-    act(() =>
-      nepaliButton.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    );
-
-    expect(container.querySelector('.month-heading h2').textContent).toBe(
-      'साउन २०८१'
-    );
-    expect(container.querySelectorAll('.calendar-day')).toHaveLength(32);
-    expect(container.querySelector('.calendar-topbar .eyebrow').textContent).toBe(
-      'यात्रा योजनाकार'
-    );
+    const languageButton = container.querySelector('.language-button');
+    act(() => languageButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(container.querySelector('.today-page h1').textContent).toContain('फेरि भेटेर खुसी लाग्यो');
+    expect(languageButton.textContent).toContain('बि.सं.');
     expect(document.documentElement.lang).toBe('ne');
+  });
+
+  it('opens the global quick-add confirmation flow', () => {
+    act(() => root.render(<App />));
+    const addButton = container.querySelector('.sidebar-add');
+    act(() => addButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    expect(document.body.querySelector('.quick-add-dialog')).not.toBeNull();
+    expect(document.body.querySelector('.natural-add')).not.toBeNull();
   });
 });
