@@ -4,6 +4,8 @@ import { AppShell } from './components/AppShell';
 import { AIAssistant } from './components/AIAssistant';
 import { EventDialog } from './components/EventDialog';
 import { QuickAddDialog } from './components/QuickAddDialog';
+import { ReminderDialog } from './components/ReminderDialog';
+import { RoutineDialog } from './components/RoutineDialog';
 import { SearchResults } from './components/SearchResults';
 import { TaskDialog } from './components/TaskDialog';
 import { usePlannerStore } from './hooks/usePlannerStore';
@@ -39,9 +41,16 @@ function App() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
+  const [selectedReminderId, setSelectedReminderId] = useState<string | null>(null);
+  const [routineDialogOpen, setRoutineDialogOpen] = useState(false);
+  const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | 'unsupported'>(() =>
+    typeof Notification === 'undefined' ? 'unsupported' : Notification.permission,
+  );
 
-  const user = store.data.users.find((item) => item.id === store.userId);
-  const preferences = store.data.preferences.find((item) => item.userId === store.userId);
+  const user = store.data.users.find((item) => item.id === store.userId) ?? store.data.users[0];
+  const preferences = store.data.preferences.find((item) => item.userId === store.userId) ?? store.data.preferences[0];
   if (!user || !preferences) throw new Error('Unable to initialize the current workspace.');
 
   const calendars = store.data.calendars.filter((calendar) => calendar.userId === store.userId);
@@ -49,8 +58,12 @@ function App() {
   const tasks = store.data.tasks.filter((task) => task.userId === store.userId);
   const reminders = store.data.reminders.filter((reminder) => reminder.userId === store.userId);
   const routines = store.data.routines.filter((routine) => routine.userId === store.userId);
+  const notifications = store.data.notifications.filter((notification) => notification.userId === store.userId);
+  const markNotificationDelivered = store.markNotificationDelivered;
   const selectedEvent = events.find((event) => event.id === selectedEventId) ?? null;
   const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? null;
+  const selectedReminder = reminders.find((reminder) => reminder.id === selectedReminderId) ?? null;
+  const selectedRoutine = routines.find((routine) => routine.id === selectedRoutineId) ?? null;
   const results = useMemo(() => searchAll(store.data, store.userId, searchQuery), [store.data, store.userId, searchQuery]);
 
   useEffect(() => {
@@ -58,6 +71,21 @@ function App() {
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
+
+  useEffect(() => {
+    if (notificationPermission !== 'granted') return;
+    const dispatchDueNotifications = () => {
+      notifications
+        .filter((item) => !item.deliveredAt && item.channels.includes('push') && new Date(item.scheduledAt) <= new Date())
+        .forEach((item) => {
+          new Notification(item.title, { body: item.message, icon: '/icons/wildsaura-icon.svg', tag: item.id });
+          markNotificationDelivered(item.id);
+        });
+    };
+    dispatchDueNotifications();
+    const interval = window.setInterval(dispatchDueNotifications, 30_000);
+    return () => window.clearInterval(interval);
+  }, [markNotificationDelivered, notificationPermission, notifications]);
 
   useEffect(() => {
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -108,6 +136,31 @@ function App() {
     setTaskDialogOpen(true);
   };
 
+  const newReminder = () => {
+    setSelectedReminderId(null);
+    setReminderDialogOpen(true);
+  };
+
+  const editReminder = (reminderId: string) => {
+    setSelectedReminderId(reminderId);
+    setReminderDialogOpen(true);
+  };
+
+  const newRoutine = () => {
+    setSelectedRoutineId(null);
+    setRoutineDialogOpen(true);
+  };
+
+  const editRoutine = (routineId: string) => {
+    setSelectedRoutineId(routineId);
+    setRoutineDialogOpen(true);
+  };
+
+  const enableNotifications = async () => {
+    if (typeof Notification === 'undefined') return;
+    setNotificationPermission(await Notification.requestPermission());
+  };
+
   const selectSearchResult = (result: SearchResult) => {
     setSearchQuery('');
     navigate(result.section);
@@ -118,22 +171,24 @@ function App() {
   const page = (() => {
     if (section === 'today') return <TodayPage data={store.data} userId={store.userId} language={store.language} labels={labels} onOpenCalendar={() => navigate('calendar')} onOpenTasks={() => navigate('tasks')} onEditEvent={editEvent} onToggleTask={store.toggleTask} />;
     if (section === 'calendar') return <CalendarPage events={events} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onNewEvent={newEvent} onEditEvent={editEvent} onSaveEvent={store.saveEvent} />;
-    if (section === 'tasks') return <TasksPage tasks={tasks} events={events} preferences={preferences} labels={labels} onNewTask={newTask} onEditTask={editTask} onToggleTask={store.toggleTask} onSaveTask={store.saveTask} />;
+    if (section === 'tasks') return <TasksPage tasks={tasks} events={events} routines={routines} preferences={preferences} labels={labels} onNewTask={newTask} onEditTask={editTask} onToggleTask={store.toggleTask} onSaveTask={store.saveTask} />;
     if (section === 'planner') return <PlannerPage events={events} tasks={tasks} routines={routines} preferences={preferences} labels={labels} onApply={store.applyProposal} />;
-    if (section === 'reminders') return <RemindersPage reminders={reminders} labels={labels} onAdd={() => setQuickAddOpen(true)} />;
+    if (section === 'reminders') return <RemindersPage reminders={reminders} routines={routines} labels={labels} onAddReminder={newReminder} onEditReminder={editReminder} onCompleteReminder={store.completeReminder} onSnoozeReminder={store.snoozeReminder} onAddRoutine={newRoutine} onEditRoutine={editRoutine} onToggleRoutine={store.toggleRoutine} />;
     if (section === 'shared') return <SharedPage calendars={calendars} labels={labels} />;
     if (section === 'insights') return <InsightsPage events={events} tasks={tasks} routines={routines} labels={labels} />;
-    return <SettingsPage preferences={preferences} labels={labels} onLanguage={store.setLanguage} onTheme={store.setTheme} />;
+    return <SettingsPage preferences={preferences} labels={labels} sync={store.sync} persistentCache={store.persistentCache} notificationPermission={notificationPermission} onLanguage={store.setLanguage} onTheme={store.setTheme} onPreferences={store.savePreferences} onEnableNotifications={enableNotifications} />;
   })();
 
   return <>
-    <AppShell activeSection={section} language={store.language} labels={labels} searchQuery={searchQuery} onNavigate={navigate} onAdd={() => setQuickAddOpen(true)} onSearch={setSearchQuery} onToggleLanguage={() => store.setLanguage(store.language === 'en' ? 'ne' : 'en')}>
+    <AppShell activeSection={section} language={store.language} labels={labels} notifications={notifications} sync={store.sync} userName={user.displayName} searchQuery={searchQuery} onNavigate={navigate} onAdd={() => setQuickAddOpen(true)} onSearch={setSearchQuery} onToggleLanguage={() => store.setLanguage(store.language === 'en' ? 'ne' : 'en')} onMarkNotificationRead={store.markNotificationRead} onMarkAllNotificationsRead={store.markAllNotificationsRead}>
       {page}
       <SearchResults query={searchQuery} results={results} onSelect={selectSearchResult} onClose={() => setSearchQuery('')} />
     </AppShell>
     <EventDialog open={eventDialogOpen} event={selectedEvent} defaultDate={eventDate} userId={store.userId} timezone={preferences.timezone} calendars={calendars} events={events} language={store.language} labels={labels} onClose={() => setEventDialogOpen(false)} onSave={store.saveEvent} onDelete={store.deleteEvent} />
     <TaskDialog open={taskDialogOpen} task={selectedTask} userId={store.userId} labels={labels} onClose={() => setTaskDialogOpen(false)} onSave={store.saveTask} />
-    <QuickAddDialog open={quickAddOpen} userId={store.userId} labels={labels} events={events} tasks={tasks} routines={routines} preferences={preferences} calendars={calendars} onClose={() => setQuickAddOpen(false)} onOpenEvent={() => newEvent()} onOpenTask={newTask} onOpenReminders={() => navigate('reminders')} onOpenRoutines={() => navigate('planner')} onSaveEvent={store.saveEvent} />
+    <QuickAddDialog open={quickAddOpen} userId={store.userId} labels={labels} events={events} tasks={tasks} routines={routines} preferences={preferences} calendars={calendars} onClose={() => setQuickAddOpen(false)} onOpenEvent={() => newEvent()} onOpenTask={newTask} onOpenReminders={newReminder} onOpenRoutines={newRoutine} onSaveEvent={store.saveEvent} />
+    <ReminderDialog open={reminderDialogOpen} reminder={selectedReminder} userId={store.userId} timezone={preferences.timezone} onClose={() => setReminderDialogOpen(false)} onSave={store.saveReminder} onDelete={store.deleteReminder} />
+    <RoutineDialog open={routineDialogOpen} routine={selectedRoutine} userId={store.userId} onClose={() => setRoutineDialogOpen(false)} onSave={store.saveRoutine} onDelete={store.deleteRoutine} />
     <AIAssistant events={events} tasks={tasks} onOpenPlanner={() => navigate('planner')} />
   </>;
 }

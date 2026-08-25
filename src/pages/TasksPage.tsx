@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import type { CalendarEvent, FreeSlot, PlannerTask, UserPreferences } from '../types/domain';
+import type { CalendarEvent, FreeSlot, PlannerTask, Routine, UserPreferences } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { getTaskScheduleSuggestions } from '../services/taskService';
 import { formatDuration, taskDueDate, toDateKey } from '../utils/date';
@@ -10,6 +10,7 @@ type TaskFilter = 'today' | 'upcoming' | 'overdue' | 'completed' | 'all';
 interface TasksPageProps {
   tasks: PlannerTask[];
   events: CalendarEvent[];
+  routines: Routine[];
   preferences: UserPreferences;
   labels: Record<CopyKey, string>;
   onNewTask(): void;
@@ -18,7 +19,7 @@ interface TasksPageProps {
   onSaveTask(task: PlannerTask): void;
 }
 
-export function TasksPage({ tasks, events, preferences, labels, onNewTask, onEditTask, onToggleTask, onSaveTask }: TasksPageProps) {
+export function TasksPage({ tasks, events, routines, preferences, labels, onNewTask, onEditTask, onToggleTask, onSaveTask }: TasksPageProps) {
   const [filter, setFilter] = useState<TaskFilter>('today');
   const [scheduleTask, setScheduleTask] = useState<PlannerTask | null>(null);
   const [suggestions, setSuggestions] = useState<FreeSlot[]>([]);
@@ -37,7 +38,7 @@ export function TasksPage({ tasks, events, preferences, labels, onNewTask, onEdi
 
   const openSchedule = (task: PlannerTask) => {
     setScheduleTask(task);
-    setSuggestions(getTaskScheduleSuggestions(task, events, preferences));
+    setSuggestions(getTaskScheduleSuggestions(task, events, preferences, { tasks, routines }));
   };
 
   const applySlot = (slot: FreeSlot) => {
@@ -90,7 +91,7 @@ export function TasksPage({ tasks, events, preferences, labels, onNewTask, onEdi
 
       <Modal open={Boolean(scheduleTask)} title={`Schedule “${scheduleTask?.title ?? ''}”`} onClose={() => setScheduleTask(null)}>
         <div className="schedule-dialog-body">
-          <div className="approval-note"><span>✦</span><p><strong>Free-time suggestions</strong>These slots avoid your existing events. Choose one to confirm.</p></div>
+          <div className="approval-note"><span>✦</span><p><strong>Free-time suggestions</strong>These slots avoid events, scheduled tasks, fixed routines, and past time. Choose one to confirm.</p></div>
           {suggestions.length ? suggestions.map((slot) => (
             <button className="slot-option" type="button" key={slot.startDateTime} onClick={() => applySlot(slot)}>
               <span><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date(slot.startDateTime))}</strong><small>{new Date(slot.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(slot.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small></span><b>Use slot →</b>

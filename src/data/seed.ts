@@ -78,6 +78,7 @@ function task(
 
 export function createSeedData(): AppData {
   const now = new Date();
+  const stamp = now.toISOString();
   const today = toDateKey(now);
   const tomorrow = toDateKey(addDays(now, 1));
   const tripDate = addDays(now, 18);
@@ -197,6 +198,11 @@ export function createSeedData(): AppData {
         important: true,
         completed: false,
         channels: ['in-app', 'push'],
+        notes: '',
+        recurrenceRule: null,
+        snoozedUntil: null,
+        createdAt: stamp,
+        updatedAt: stamp,
       },
       {
         id: 'rem_medicine',
@@ -207,6 +213,11 @@ export function createSeedData(): AppData {
         important: false,
         completed: false,
         channels: ['in-app'],
+        notes: '',
+        recurrenceRule: 'FREQ=DAILY',
+        snoozedUntil: null,
+        createdAt: stamp,
+        updatedAt: stamp,
       },
       {
         id: 'rem_renewal',
@@ -217,6 +228,11 @@ export function createSeedData(): AppData {
         important: false,
         completed: false,
         channels: ['in-app', 'email'],
+        notes: '',
+        recurrenceRule: null,
+        snoozedUntil: null,
+        createdAt: stamp,
+        updatedAt: stamp,
       },
     ],
     routines: [
@@ -230,6 +246,9 @@ export function createSeedData(): AppData {
         reminderMinutes: 10,
         flexibility: 'flexible',
         color: '#8c6ab1',
+        active: true,
+        createdAt: stamp,
+        updatedAt: stamp,
       },
       {
         id: 'routine_sleep',
@@ -241,8 +260,27 @@ export function createSeedData(): AppData {
         reminderMinutes: 30,
         flexibility: 'fixed',
         color: '#536b8e',
+        active: true,
+        createdAt: stamp,
+        updatedAt: stamp,
       },
     ],
     notifications: [],
+  };
+}
+
+export function createSeedDataForUser(user: AppData['users'][number]): AppData {
+  const data = createSeedData();
+  const applyUserId = <T extends { userId: string }>(item: T): T => ({ ...item, userId: user.id });
+  return {
+    ...data,
+    users: [user],
+    preferences: data.preferences.map(applyUserId),
+    calendars: data.calendars.map(applyUserId),
+    events: data.events.map(applyUserId),
+    tasks: data.tasks.map(applyUserId),
+    reminders: data.reminders.map(applyUserId),
+    routines: data.routines.map(applyUserId),
+    notifications: data.notifications.map(applyUserId),
   };
 }

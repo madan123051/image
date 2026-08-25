@@ -76,6 +76,8 @@ export class LocalRulesAIProvider implements AIPlannerProvider {
   }
 
   async proposePlan(prompt: string, context: PlannerContext): Promise<PlannerProposal> {
+    const now = new Date();
+    const rangeEnd = addDays(now, 7);
     const candidates = context.tasks
       .filter((task) => task.status !== 'completed')
       .sort((left, right) => {
@@ -85,7 +87,13 @@ export class LocalRulesAIProvider implements AIPlannerProvider {
       .slice(0, 3);
     const reserved = [...context.events];
     const items = candidates.flatMap((task) => {
-      const slot = suggestFreeTime(reserved, task.estimatedMinutes, context.preferences, 'any')[0];
+      const slot = suggestFreeTime(reserved, task.estimatedMinutes, context.preferences, 'any', {
+        tasks: context.tasks.filter((candidate) => candidate.id !== task.id),
+        routines: context.routines,
+        now,
+        rangeStart: now,
+        rangeEnd,
+      })[0];
       if (!slot) return [];
       reserved.push({
         id: `proposal_hold_${task.id}`,
@@ -108,8 +116,8 @@ export class LocalRulesAIProvider implements AIPlannerProvider {
         url: '',
         isImportant: false,
         countdown: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
       });
       return [
         {

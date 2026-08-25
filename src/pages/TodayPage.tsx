@@ -2,6 +2,7 @@ import type { AppData, Language } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { calculateFreeMinutes, formatDuration, isSameDay, minutesBetween, toDateKey } from '../utils/date';
 import { getNepaliDate, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
+import { getEventCalendarDayCountdown } from '../services/countdownService';
 
 interface TodayPageProps {
   data: AppData;
@@ -143,11 +144,11 @@ export function TodayPage({
           <section className="content-panel countdown-panel">
             <header className="section-heading"><div><p className="eyebrow">Life dates</p><h2>Countdowns</h2></div></header>
             {countdowns.length ? countdowns.slice(0, 3).map((event) => {
-              const days = Math.ceil((new Date(event.startDateTime).getTime() - now.getTime()) / 86_400_000);
+              const countdown = getEventCalendarDayCountdown(event, now, preferences.timezone);
               return (
                 <button type="button" className="countdown-card" key={event.id} onClick={() => onEditEvent(event.id)}>
-                  <span><strong>{event.title}</strong><small>{new Date(event.startDateTime).toLocaleDateString()}</small></span>
-                  <b>{language === 'ne' ? toNepaliNumerals(days) : days}<small>days</small></b>
+                  <span><strong>{event.title}</strong><small>{new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', { dateStyle: 'medium', timeZone: event.timezone || preferences.timezone }).format(new Date(event.startDateTime))}</small></span>
+                  <b>{language === 'ne' ? toNepaliNumerals(countdown.daysRemaining) : countdown.daysRemaining}<small>{language === 'ne' ? 'दिन' : 'days'}</small></b>
                 </button>
               );
             }) : <p className="muted-copy">Mark an important event as a countdown.</p>}
