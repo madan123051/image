@@ -221,6 +221,14 @@ export class FirestoreLifePlannerRepository implements LifePlannerRepository {
     return this.readCollection(userId, 'calendars');
   }
 
+  async saveCalendar(userId: string, calendar: CalendarDefinition): Promise<CalendarDefinition> {
+    return this.saveOwned(userId, 'calendars', calendar);
+  }
+
+  async deleteCalendar(userId: string, calendarId: string): Promise<void> {
+    await deleteDoc(this.ownedDocument(userId, 'calendars', calendarId));
+  }
+
   async getEvents(userId: string): Promise<CalendarEvent[]> {
     return this.readCollection(userId, 'events');
   }

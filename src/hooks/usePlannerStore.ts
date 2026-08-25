@@ -3,6 +3,7 @@ import { getFirebaseServices, isFirebaseConfigured } from '../config/firebase';
 import { createSeedData, createSeedDataForUser, DEMO_USER_ID } from '../data/seed';
 import type {
   AppData,
+  CalendarDefinition,
   CalendarEvent,
   Language,
   NotificationItem,
@@ -28,6 +29,9 @@ export interface PlannerStore {
   theme: ThemePreference;
   sync: PlannerSyncState;
   persistentCache: boolean;
+  isAnonymous: boolean;
+  saveCalendar(calendar: CalendarDefinition): void;
+  deleteCalendar(calendarId: string): void;
   saveEvent(event: CalendarEvent): void;
   deleteEvent(eventId: string): void;
   saveTask(task: PlannerTask): void;
@@ -51,7 +55,7 @@ export interface PlannerStore {
 
 const demoSync: PlannerSyncState = {
   mode: 'demo',
-  message: 'Demo data · Firebase variables not configured',
+  message: 'Local fallback · connect Firebase to sync across devices',
   hasPendingWrites: false,
 };
 
@@ -83,6 +87,7 @@ export function usePlannerStore(): PlannerStore {
     hasPendingWrites: false,
   } : demoSync);
   const [persistentCache, setPersistentCache] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const dataRef = useRef(data);
   const repositoryRef = useRef<LifePlannerRepository | null>(null);
 
@@ -140,6 +145,7 @@ export function usePlannerStore(): PlannerStore {
         const session = await new FirebaseAnonymousAuthProvider(services.auth).getSession();
         if (!active) return;
         const repository = new FirestoreLifePlannerRepository(services.db);
+        setIsAnonymous(session.isAnonymous);
         repositoryRef.current = repository;
         const seed = createSeedDataForUser(session.user);
         const stored = await repository.initializeWorkspace(session.user, seed);
@@ -207,6 +213,30 @@ export function usePlannerStore(): PlannerStore {
       window.removeEventListener('offline', updateNetworkState);
     };
   }, []);
+
+  const saveCalendar = useCallback((calendar: CalendarDefinition) => {
+    assertOwnedBy(userId, calendar.userId);
+    const current = dataRef.current;
+    commitData({
+      ...current,
+      calendars: current.calendars.some((item) => item.id === calendar.id)
+        ? current.calendars.map((item) => (item.id === calendar.id ? calendar : item))
+        : [...current.calendars, calendar],
+    });
+    persist((repository) => repository.saveCalendar(userId, calendar));
+  }, [commitData, persist, userId]);
+
+  const deleteCalendar = useCallback((calendarId: string) => {
+    const current = dataRef.current;
+    const calendar = current.calendars.find((item) => item.id === calendarId);
+    if (!calendar) return;
+    assertOwnedBy(userId, calendar.userId);
+    if (current.events.some((item) => item.calendarId === calendarId)) {
+      throw new Error('Move or delete this calendar’s events first.');
+    }
+    commitData({ ...current, calendars: current.calendars.filter((item) => item.id !== calendarId) });
+    persist((repository) => repository.deleteCalendar(userId, calendarId));
+  }, [commitData, persist, userId]);
 
   const saveEvent = useCallback((event: CalendarEvent) => {
     assertOwnedBy(userId, event.userId);
@@ -467,6 +497,9 @@ export function usePlannerStore(): PlannerStore {
       theme: preferences.theme,
       sync,
       persistentCache,
+      isAnonymous,
+      saveCalendar,
+      deleteCalendar,
       saveEvent,
       deleteEvent,
       saveTask,
@@ -494,6 +527,9 @@ export function usePlannerStore(): PlannerStore {
       preferences.theme,
       sync,
       persistentCache,
+      isAnonymous,
+      saveCalendar,
+      deleteCalendar,
       saveEvent,
       deleteEvent,
       saveTask,

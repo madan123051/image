@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { AppSection, Language, NotificationItem, PlannerSyncState } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { NotificationCenter } from './NotificationCenter';
@@ -21,6 +21,8 @@ interface AppShellProps {
   notifications: NotificationItem[];
   sync: PlannerSyncState;
   userName: string;
+  avatarUrl?: string;
+  isAnonymous: boolean;
   searchQuery: string;
   onNavigate(section: AppSection): void;
   onAdd(): void;
@@ -28,6 +30,8 @@ interface AppShellProps {
   onToggleLanguage(): void;
   onMarkNotificationRead(notificationId: string): void;
   onMarkAllNotificationsRead(): void;
+  onOpenNotification(notification: NotificationItem): void;
+  onOpenAccount(): void;
   children: ReactNode;
 }
 
@@ -38,6 +42,8 @@ export function AppShell({
   notifications,
   sync,
   userName,
+  avatarUrl,
+  isAnonymous,
   searchQuery,
   onNavigate,
   onAdd,
@@ -45,8 +51,11 @@ export function AppShell({
   onToggleLanguage,
   onMarkNotificationRead,
   onMarkAllNotificationsRead,
+  onOpenNotification,
+  onOpenAccount,
   children,
 }: AppShellProps) {
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const mobileItems = navigation.slice(0, 4);
   return (
     <div className="app-shell">
@@ -77,7 +86,7 @@ export function AppShell({
         <div className="sidebar-foot">
           <div className="storage-note" role="status" aria-live="polite">
             <span className={`status-dot ${sync.mode}`} />
-            <span><strong>{sync.mode === 'demo' ? 'Demo workspace' : 'Firebase workspace'}</strong><small>{sync.message}</small></span>
+            <span><strong>{sync.mode === 'demo' ? 'Local workspace' : 'Firebase workspace'}</strong><small>{sync.message}</small></span>
           </div>
         </div>
       </aside>
@@ -101,8 +110,11 @@ export function AppShell({
             <button className="language-button" type="button" onClick={onToggleLanguage}>
               {language === 'en' ? 'EN · AD' : 'ने · बि.सं.'}
             </button>
-            <NotificationCenter notifications={notifications} onMarkRead={onMarkNotificationRead} onMarkAllRead={onMarkAllNotificationsRead} />
-            <span className="avatar" aria-label={`${userName} profile`}>{userName.charAt(0).toUpperCase()}</span>
+            <NotificationCenter notifications={notifications} onMarkRead={onMarkNotificationRead} onMarkAllRead={onMarkAllNotificationsRead} onOpen={onOpenNotification} />
+            <button className="profile-button" type="button" onClick={onOpenAccount} aria-label={`Open ${userName} profile`}>
+              <span className="avatar">{avatarUrl ? <img src={avatarUrl} alt="" /> : userName.charAt(0).toUpperCase()}</span>
+              <span><strong>{userName}</strong><small>{isAnonymous ? 'Guest' : 'Account'}</small></span>
+            </button>
           </div>
         </header>
         <main className="page-stage">{children}</main>
@@ -124,11 +136,13 @@ export function AppShell({
         <button
           className={['reminders', 'shared', 'insights', 'settings'].includes(activeSection) ? 'bottom-nav-item active' : 'bottom-nav-item'}
           type="button"
-          onClick={() => onNavigate('settings')}
+          onClick={() => setMobileMoreOpen((current) => !current)}
+          aria-expanded={mobileMoreOpen}
         >
           <span aria-hidden="true">•••</span><small>More</small>
         </button>
       </nav>
+      {mobileMoreOpen ? <div className="mobile-more-menu" role="menu">{navigation.slice(4).map((item) => <button type="button" role="menuitem" key={item.id} onClick={() => { onNavigate(item.id); setMobileMoreOpen(false); }}><span>{item.icon}</span>{labels[item.label]}</button>)}</div> : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 {
   "name": "calendar-app",
   "version": "1.0.0",
+  "packageManager": "pnpm@11.19.0",
   "type": "module",
   "scripts": {
     "build": "react-scripts build",

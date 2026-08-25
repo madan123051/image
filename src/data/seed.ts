@@ -277,10 +277,10 @@ export function createSeedDataForUser(user: AppData['users'][number]): AppData {
     users: [user],
     preferences: data.preferences.map(applyUserId),
     calendars: data.calendars.map(applyUserId),
-    events: data.events.map(applyUserId),
-    tasks: data.tasks.map(applyUserId),
-    reminders: data.reminders.map(applyUserId),
-    routines: data.routines.map(applyUserId),
-    notifications: data.notifications.map(applyUserId),
+    events: [],
+    tasks: [],
+    reminders: [],
+    routines: [],
+    notifications: [],
   };
 }

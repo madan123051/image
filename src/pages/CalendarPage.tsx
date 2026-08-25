@@ -22,6 +22,7 @@ interface CalendarPageProps {
   onNewEvent(dateKey: string): void;
   onEditEvent(eventId: string): void;
   onSaveEvent(event: CalendarEvent): void;
+  onAddCalendar(): void;
 }
 
 const englishWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -90,6 +91,7 @@ export function CalendarPage({
   onNewEvent,
   onEditEvent,
   onSaveEvent,
+  onAddCalendar,
 }: CalendarPageProps) {
   const [view, setView] = useState<CalendarView>('month');
   const [visibleCalendarIds, setVisibleCalendarIds] = useState(() => calendars.filter((calendar) => calendar.visible).map((calendar) => calendar.id));
@@ -175,7 +177,7 @@ export function CalendarPage({
                 <i style={{ background: calendar.color }} /><span>{calendar.name}</span><small>{calendar.role}</small>
               </label>
             ))}
-            <button className="text-button calendar-settings-link" type="button">＋ Add calendar</button>
+            <button className="text-button calendar-settings-link" type="button" onClick={onAddCalendar}>＋ Add calendar</button>
             <div className="calendar-tip"><span>✦</span><p><strong>Smart scheduling</strong>Fixed appointments stay protected. Suggestions always require approval.</p></div>
           </aside>
 
