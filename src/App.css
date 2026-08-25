@@ -259,9 +259,19 @@ button { color: inherit; }
 .assistant-button:hover { background: var(--forest-700); }
 .assistant-panel { position: absolute; right: 0; bottom: 62px; width: min(350px,calc(100vw - 32px)); overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: var(--paper); box-shadow: 0 22px 60px rgba(0,0,0,.22); }
 .assistant-panel header { display: flex; align-items: center; gap: 9px; padding: 13px; background: var(--forest-900); color: #fff; } .assistant-panel header > span { color: var(--amber); } .assistant-panel header > div { display: grid; flex: 1; } .assistant-panel header small { color: #a8c0b5; font-size: 8px; } .assistant-panel header .icon-button { border-color: rgba(255,255,255,.15); background: transparent; color: #fff; }
-.assistant-answer { min-height: 85px; padding: 17px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.assistant-answer { min-height: 85px; max-height: 390px; overflow-y: auto; padding: 17px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.assistant-answer > p { margin: 0; }
+.assistant-action-list { display: grid; gap: 8px; margin: 16px 0; }
+.assistant-action { display: grid; grid-template-columns: 35px minmax(0,1fr); align-items: start; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--canvas); }
+.assistant-action.delete { border-color: color-mix(in srgb,var(--danger) 35%,var(--line)); } .assistant-action.update { border-color: color-mix(in srgb,var(--amber) 40%,var(--line)); }
+.assistant-action-icon { display: grid; width: 33px; height: 33px; place-items: center; border-radius: 9px; background: var(--forest-100); color: var(--forest-700); font-weight: 900; }
+.assistant-action > span:last-child { display: grid; min-width: 0; } .assistant-action small { color: var(--amber); font-size: 7px; font-weight: 850; letter-spacing: .09em; text-transform: uppercase; } .assistant-action strong { margin-top: 2px; font-size: 11px; }
+.assistant-action time,.assistant-action em { margin-top: 4px; color: var(--muted); font-size: 8px; font-style: normal; line-height: 1.45; }
+.assistant-action-list.compact { margin-bottom: 0; } .assistant-action-list.compact .assistant-action { padding: 9px; } .assistant-action-list.compact .assistant-action-icon { width: 29px; height: 29px; }
+.assistant-warning,.assistant-error,.assistant-success { display: block; margin-top: 10px; padding: 8px; border-radius: 8px; font-size: 8px; line-height: 1.45; } .assistant-warning { background: var(--amber-soft); color: #8d601b; } .assistant-error { background: #fff0ee; color: var(--danger); } .assistant-success { background: var(--forest-100); color: var(--forest-700); }
+.assistant-approval { display: flex; justify-content: flex-end; gap: 7px; padding: 0 13px 12px; } .assistant-approval button { min-height: 34px; font-size: 9px; }
 .assistant-suggestions { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 13px 11px; } .assistant-suggestions button { padding: 5px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--canvas); cursor: pointer; color: var(--muted); font-size: 7px; }
-.assistant-panel form { display: flex; margin: 0 13px; border: 1px solid var(--line); border-radius: 9px; } .assistant-panel form input { width: 100%; min-width: 0; height: 39px; padding: 0 10px; border: 0; outline: 0; background: transparent; color: var(--ink); } .assistant-panel form button { width: 34px; margin: 4px; border: 0; border-radius: 7px; background: var(--forest-800); color: #fff; cursor: pointer; }
+.assistant-panel form { display: flex; margin: 0 13px; border: 1px solid var(--line); border-radius: 9px; } .assistant-panel form input { width: 100%; min-width: 0; height: 39px; padding: 0 10px; border: 0; outline: 0; background: transparent; color: var(--ink); } .assistant-panel form button { width: 34px; margin: 4px; border: 0; border-radius: 7px; background: var(--forest-800); color: #fff; cursor: pointer; } .assistant-panel form button:disabled { opacity: .45; cursor: not-allowed; }
 .assistant-planner-link { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--forest-700); cursor: pointer; font-size: 9px; font-weight: 800; }
 .bottom-navigation,.mobile-add { display: none; }
 
