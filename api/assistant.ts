@@ -2,10 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { google } from '@ai-sdk/google';
 import { isStepCount, Output, ToolLoopAgent, tool } from 'ai';
 import { z } from 'zod';
-import { assistantRequestSchema, assistantResponseSchema, type AssistantContext } from '../src/services/assistantSchema';
-import { suggestFreeTime } from '../src/services/calendarService';
+import { assistantRequestSchema, assistantResponseSchema, type AssistantContext } from '../src/services/assistantSchema.js';
+import { suggestFreeTime } from '../src/services/freeTimeEngine.js';
 import type { CalendarEvent, PlannerTask, Routine, UserPreferences } from '../src/types/domain';
-import { addDays } from '../src/utils/date';
 
 export const config = { maxDuration: 60 };
 
@@ -13,6 +12,12 @@ const MODEL_ID = 'gemini-3.7-flash';
 const RATE_WINDOW_MS = 5 * 60_000;
 const RATE_LIMIT = 15;
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
 
 function allowOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
