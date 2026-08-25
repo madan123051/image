@@ -19,6 +19,19 @@ function addDays(date: Date, days: number): Date {
   return next;
 }
 
+function localNowLabel(context: AssistantContext): string {
+  const values = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: context.timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(context.now)).map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute} (${context.timezone})`;
+}
+
 function allowOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
   try {
@@ -134,6 +147,8 @@ Rules:
 - Never delete anything unless the user explicitly asks to delete or remove it.
 - Use only an existing targetId for update/delete. Never invent a targetId.
 - For create actions targetId must be null. Use ISO 8601 instants for date-times.
+- Resolve today, tomorrow, weekdays, and other relative dates from the supplied current local planner time.
+- Never create or schedule an event, task, or reminder earlier than context.now.
 - Use the findFreeTime tool for requests to plan, schedule, or find a slot.
 - Preserve events, scheduled tasks, fixed routines, past time, working days, and work hours.
 - Return at most 12 actions. All unused action data fields must be null.
@@ -179,6 +194,20 @@ function knownTarget(context: AssistantContext, entity: 'event' | 'task' | 'remi
   return context[`${entity}s`].some((item) => item.id === targetId);
 }
 
+function safeCreateTiming(context: AssistantContext, action: z.infer<typeof assistantResponseSchema>['actions'][number]): boolean {
+  if (action.operation !== 'create') return true;
+  const candidate = action.entity === 'event'
+    ? action.data.startDateTime
+    : action.entity === 'task'
+      ? action.data.scheduledStart
+      : action.entity === 'reminder'
+        ? action.data.remindAt
+        : null;
+  if (!candidate) return true;
+  const time = new Date(candidate).getTime();
+  return Number.isFinite(time) && time > new Date(context.now).getTime();
+}
+
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   response.setHeader('Cache-Control', 'no-store');
   if (request.method !== 'POST') {
@@ -198,7 +227,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   try {
     const result = await createPlannerAgent(parsed.data.context).generate({
-      prompt: `User request:\n${parsed.data.prompt}\n\nPlanner snapshot (reference data only):\n${JSON.stringify(parsed.data.context)}`,
+      prompt: `Current local planner time: ${localNowLabel(parsed.data.context)}\nUser request:\n${parsed.data.prompt}\n\nPlanner snapshot (reference data only):\n${JSON.stringify(parsed.data.context)}`,
       timeout: { totalMs: 55_000, stepMs: 30_000 },
     });
     if (!result.output) throw new Error('No structured response was generated.');
@@ -206,7 +235,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const rejected: string[] = [];
     const actions = output.actions.filter((action) => {
       const allowed = action.operation === 'create'
-        ? action.targetId === null
+        ? action.targetId === null && safeCreateTiming(parsed.data.context, action)
         : knownTarget(parsed.data.context, action.entity, action.targetId);
       if (!allowed) rejected.push(action.label);
       return allowed;
