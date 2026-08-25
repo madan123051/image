@@ -1,6 +1,6 @@
-# Image Project
+# Wildsaura Calendar
 
-A responsive, accessible monthly calendar built with React.
+A responsive, accessible monthly calendar with an original prehistoric-jungle identity.
 
 ## 🚀 Quick Start
 
@@ -20,6 +20,8 @@ npm run build
 ```
 calendar-app/
 ├── public/
+│   ├── assets/
+│   │   └── wildsaura-mascot.webp
 │   └── index.html
 ├── src/
 │   ├── App.js
@@ -39,6 +41,7 @@ Visit the deployed app: https://image-peach-ten-25.vercel.app
 
 - **Frontend**: React
 - **Styling**: CSS
+- **Visual identity**: Original Wildsaura theme and mascot
 - **Deployment**: Vercel
 - **Build Tool**: Standard React build setup
 
