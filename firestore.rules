@@ -1,0 +1,390 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function sizedString(value, minimum, maximum) {
+      return value is string
+        && value.size() >= minimum
+        && value.size() <= maximum;
+    }
+
+    function nullableString(value, maximum) {
+      return value == null || sizedString(value, 0, maximum);
+    }
+
+    function boundedInt(value, minimum, maximum) {
+      return value is int && value >= minimum && value <= maximum;
+    }
+
+    function validChannels(value) {
+      return value is list
+        && value.size() <= 3
+        && value.hasOnly(['in-app', 'push', 'email']);
+    }
+
+    function validUser(uid, data) {
+      return data.keys().hasAll(['id', 'email', 'displayName', 'createdAt'])
+        && data.keys().hasOnly(['id', 'email', 'displayName', 'avatarUrl', 'createdAt'])
+        && data.id == uid
+        && sizedString(data.email, 0, 320)
+        && sizedString(data.displayName, 1, 120)
+        && (!('avatarUrl' in data) || sizedString(data.avatarUrl, 0, 2048))
+        && sizedString(data.createdAt, 1, 64);
+    }
+
+    function validPreferences(uid, data) {
+      return data.keys().hasAll([
+          'userId', 'language', 'timezone', 'dateFormat', 'timeFormat',
+          'firstDayOfWeek', 'workDayStart', 'workDayEnd', 'workingDays',
+          'sleepStart', 'sleepEnd', 'defaultEventMinutes',
+          'defaultTaskMinutes', 'theme'
+        ])
+        && data.keys().hasOnly([
+          'userId', 'language', 'timezone', 'dateFormat', 'timeFormat',
+          'firstDayOfWeek', 'workDayStart', 'workDayEnd', 'workingDays',
+          'sleepStart', 'sleepEnd', 'defaultEventMinutes',
+          'defaultTaskMinutes', 'theme'
+        ])
+        && data.userId == uid
+        && data.language in ['en', 'ne']
+        && sizedString(data.timezone, 1, 100)
+        && data.dateFormat in ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD']
+        && data.timeFormat in ['12h', '24h']
+        && data.firstDayOfWeek in [0, 1, 6]
+        && sizedString(data.workDayStart, 4, 8)
+        && sizedString(data.workDayEnd, 4, 8)
+        && data.workingDays is list
+        && data.workingDays.size() >= 1
+        && data.workingDays.size() <= 7
+        && data.workingDays.hasOnly([0, 1, 2, 3, 4, 5, 6])
+        && sizedString(data.sleepStart, 4, 8)
+        && sizedString(data.sleepEnd, 4, 8)
+        && boundedInt(data.defaultEventMinutes, 1, 1440)
+        && boundedInt(data.defaultTaskMinutes, 1, 1440)
+        && data.theme in ['light', 'dark', 'system'];
+    }
+
+    function validCalendar(uid, calendarId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'name', 'color', 'icon', 'visible', 'isPrivate', 'role'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'name', 'color', 'icon', 'visible', 'isPrivate', 'role'
+        ])
+        && data.id == calendarId
+        && data.userId == uid
+        && sizedString(data.name, 1, 120)
+        && sizedString(data.color, 1, 32)
+        && sizedString(data.icon, 0, 32)
+        && data.visible is bool
+        && data.isPrivate is bool
+        && data.role in ['owner', 'editor', 'viewer'];
+    }
+
+    function validEventReminder(data) {
+      return data is map
+        && data.keys().hasAll(['id', 'minutesBefore', 'channels'])
+        && data.keys().hasOnly(['id', 'minutesBefore', 'channels'])
+        && sizedString(data.id, 1, 128)
+        && boundedInt(data.minutesBefore, 0, 525600)
+        && validChannels(data.channels);
+    }
+
+    function validEventReminders(value) {
+      return value is list
+        && value.size() <= 5
+        && (value.size() < 1 || validEventReminder(value[0]))
+        && (value.size() < 2 || validEventReminder(value[1]))
+        && (value.size() < 3 || validEventReminder(value[2]))
+        && (value.size() < 4 || validEventReminder(value[3]))
+        && (value.size() < 5 || validEventReminder(value[4]));
+    }
+
+    function validParticipant(data) {
+      return data is map
+        && data.keys().hasAll(['id', 'name', 'email', 'response'])
+        && data.keys().hasOnly(['id', 'name', 'email', 'response'])
+        && sizedString(data.id, 1, 128)
+        && sizedString(data.name, 1, 120)
+        && sizedString(data.email, 0, 320)
+        && data.response in ['pending', 'accepted', 'declined'];
+    }
+
+    function validParticipants(value) {
+      return value is list
+        && value.size() <= 5
+        && (value.size() < 1 || validParticipant(value[0]))
+        && (value.size() < 2 || validParticipant(value[1]))
+        && (value.size() < 3 || validParticipant(value[2]))
+        && (value.size() < 4 || validParticipant(value[3]))
+        && (value.size() < 5 || validParticipant(value[4]));
+    }
+
+    function validAttachment(data) {
+      return data is map
+        && data.keys().hasAll(['id', 'name', 'url', 'mimeType'])
+        && data.keys().hasOnly(['id', 'name', 'url', 'mimeType'])
+        && sizedString(data.id, 1, 128)
+        && sizedString(data.name, 1, 255)
+        && sizedString(data.url, 1, 2048)
+        && sizedString(data.mimeType, 1, 255);
+    }
+
+    function validAttachments(value) {
+      return value is list
+        && value.size() <= 5
+        && (value.size() < 1 || validAttachment(value[0]))
+        && (value.size() < 2 || validAttachment(value[1]))
+        && (value.size() < 3 || validAttachment(value[2]))
+        && (value.size() < 4 || validAttachment(value[3]))
+        && (value.size() < 5 || validAttachment(value[4]));
+    }
+
+    function validEvent(uid, eventId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'calendarId', 'title', 'description',
+          'startDateTime', 'endDateTime', 'timezone', 'allDay', 'location',
+          'color', 'status', 'recurrenceRule', 'reminders', 'participants',
+          'attachments', 'notes', 'url', 'isImportant', 'countdown',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'calendarId', 'title', 'description',
+          'startDateTime', 'endDateTime', 'timezone', 'allDay', 'location',
+          'color', 'status', 'recurrenceRule', 'reminders', 'participants',
+          'attachments', 'notes', 'url', 'isImportant', 'countdown',
+          'createdAt', 'updatedAt'
+        ])
+        && data.id == eventId
+        && data.userId == uid
+        && sizedString(data.calendarId, 1, 128)
+        && sizedString(data.title, 1, 200)
+        && sizedString(data.description, 0, 10000)
+        && sizedString(data.startDateTime, 1, 64)
+        && sizedString(data.endDateTime, 1, 64)
+        && sizedString(data.timezone, 1, 100)
+        && data.allDay is bool
+        && sizedString(data.location, 0, 500)
+        && sizedString(data.color, 1, 32)
+        && data.status in ['confirmed', 'tentative', 'completed', 'cancelled']
+        && nullableString(data.recurrenceRule, 1000)
+        && validEventReminders(data.reminders)
+        && validParticipants(data.participants)
+        && validAttachments(data.attachments)
+        && sizedString(data.notes, 0, 10000)
+        && sizedString(data.url, 0, 2048)
+        && data.isImportant is bool
+        && data.countdown is bool
+        && sizedString(data.createdAt, 1, 64)
+        && sizedString(data.updatedAt, 1, 64);
+    }
+
+    function validSubtask(data) {
+      return data is map
+        && data.keys().hasAll(['id', 'title', 'completed'])
+        && data.keys().hasOnly(['id', 'title', 'completed'])
+        && sizedString(data.id, 1, 128)
+        && sizedString(data.title, 1, 200)
+        && data.completed is bool;
+    }
+
+    function validSubtasks(value) {
+      return value is list
+        && value.size() <= 5
+        && (value.size() < 1 || validSubtask(value[0]))
+        && (value.size() < 2 || validSubtask(value[1]))
+        && (value.size() < 3 || validSubtask(value[2]))
+        && (value.size() < 4 || validSubtask(value[3]))
+        && (value.size() < 5 || validSubtask(value[4]));
+    }
+
+    function validTask(uid, taskId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'title', 'description', 'status', 'priority',
+          'dueDate', 'dueTime', 'scheduledStart', 'scheduledEnd',
+          'estimatedMinutes', 'category', 'subtasks', 'recurrenceRule',
+          'reminderMinutes', 'completedAt', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'title', 'description', 'status', 'priority',
+          'dueDate', 'dueTime', 'scheduledStart', 'scheduledEnd',
+          'estimatedMinutes', 'category', 'subtasks', 'recurrenceRule',
+          'reminderMinutes', 'completedAt', 'createdAt', 'updatedAt'
+        ])
+        && data.id == taskId
+        && data.userId == uid
+        && sizedString(data.title, 1, 200)
+        && sizedString(data.description, 0, 10000)
+        && data.status in ['inbox', 'planned', 'in-progress', 'completed']
+        && data.priority in ['low', 'medium', 'high', 'urgent']
+        && nullableString(data.dueDate, 32)
+        && nullableString(data.dueTime, 16)
+        && nullableString(data.scheduledStart, 64)
+        && nullableString(data.scheduledEnd, 64)
+        && boundedInt(data.estimatedMinutes, 1, 10080)
+        && sizedString(data.category, 0, 120)
+        && validSubtasks(data.subtasks)
+        && nullableString(data.recurrenceRule, 1000)
+        && (data.reminderMinutes == null
+          || boundedInt(data.reminderMinutes, 0, 525600))
+        && nullableString(data.completedAt, 64)
+        && sizedString(data.createdAt, 1, 64)
+        && sizedString(data.updatedAt, 1, 64);
+    }
+
+    function validReminder(uid, reminderId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'title', 'kind', 'remindAt', 'important',
+          'completed', 'channels', 'notes', 'recurrenceRule',
+          'snoozedUntil', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'title', 'kind', 'remindAt', 'important',
+          'completed', 'channels', 'notes', 'recurrenceRule',
+          'snoozedUntil', 'createdAt', 'updatedAt'
+        ])
+        && data.id == reminderId
+        && data.userId == uid
+        && sizedString(data.title, 1, 200)
+        && data.kind in ['bill', 'birthday', 'medication', 'appointment', 'renewal', 'custom']
+        && sizedString(data.remindAt, 1, 64)
+        && data.important is bool
+        && data.completed is bool
+        && validChannels(data.channels)
+        && sizedString(data.notes, 0, 10000)
+        && nullableString(data.recurrenceRule, 1000)
+        && nullableString(data.snoozedUntil, 64)
+        && sizedString(data.createdAt, 1, 64)
+        && sizedString(data.updatedAt, 1, 64);
+    }
+
+    function validRoutine(uid, routineId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'title', 'days', 'startTime', 'durationMinutes',
+          'reminderMinutes', 'flexibility', 'color', 'active',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'title', 'days', 'startTime', 'durationMinutes',
+          'reminderMinutes', 'flexibility', 'color', 'active',
+          'createdAt', 'updatedAt'
+        ])
+        && data.id == routineId
+        && data.userId == uid
+        && sizedString(data.title, 1, 200)
+        && data.days is list
+        && data.days.size() >= 1
+        && data.days.size() <= 7
+        && data.days.hasOnly([0, 1, 2, 3, 4, 5, 6])
+        && sizedString(data.startTime, 4, 8)
+        && boundedInt(data.durationMinutes, 1, 1440)
+        && boundedInt(data.reminderMinutes, 0, 525600)
+        && data.flexibility in ['fixed', 'flexible']
+        && sizedString(data.color, 1, 32)
+        && data.active is bool
+        && sizedString(data.createdAt, 1, 64)
+        && sizedString(data.updatedAt, 1, 64);
+    }
+
+    function validNotification(uid, notificationId, data) {
+      return data.keys().hasAll([
+          'id', 'userId', 'sourceId', 'type', 'title', 'message',
+          'scheduledAt', 'channels', 'read', 'readAt', 'deliveredAt',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'userId', 'sourceId', 'type', 'title', 'message',
+          'scheduledAt', 'channels', 'read', 'readAt', 'deliveredAt',
+          'createdAt'
+        ])
+        && data.id == notificationId
+        && data.userId == uid
+        && sizedString(data.sourceId, 1, 128)
+        && data.type in ['event', 'task', 'missed-task', 'birthday', 'bill', 'countdown', 'shared']
+        && sizedString(data.title, 1, 200)
+        && sizedString(data.message, 0, 2000)
+        && sizedString(data.scheduledAt, 1, 64)
+        && validChannels(data.channels)
+        && data.read is bool
+        && nullableString(data.readAt, 64)
+        && nullableString(data.deliveredAt, 64)
+        && sizedString(data.createdAt, 1, 64);
+    }
+
+    function validWorkspace(uid, data) {
+      return data.keys().hasAll([
+          'userId', 'schemaVersion', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'userId', 'schemaVersion', 'createdAt', 'updatedAt'
+        ])
+        && data.userId == uid
+        && data.schemaVersion == 2
+        && sizedString(data.createdAt, 1, 64)
+        && sizedString(data.updatedAt, 1, 64);
+    }
+
+    match /users/{uid} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid) && validUser(uid, request.resource.data);
+    }
+
+    match /users/{uid}/preferences/{preferenceId} {
+      allow read, delete: if owns(uid) && preferenceId == 'current';
+      allow create, update: if owns(uid)
+        && preferenceId == 'current'
+        && validPreferences(uid, request.resource.data);
+    }
+
+    match /users/{uid}/metadata/{metadataId} {
+      allow read, delete: if owns(uid) && metadataId == 'workspace';
+      allow create, update: if owns(uid)
+        && metadataId == 'workspace'
+        && validWorkspace(uid, request.resource.data);
+    }
+
+    match /users/{uid}/calendars/{calendarId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validCalendar(uid, calendarId, request.resource.data);
+    }
+
+    match /users/{uid}/events/{eventId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validEvent(uid, eventId, request.resource.data);
+    }
+
+    match /users/{uid}/tasks/{taskId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validTask(uid, taskId, request.resource.data);
+    }
+
+    match /users/{uid}/reminders/{reminderId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validReminder(uid, reminderId, request.resource.data);
+    }
+
+    match /users/{uid}/routines/{routineId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validRoutine(uid, routineId, request.resource.data);
+    }
+
+    match /users/{uid}/notifications/{notificationId} {
+      allow read, delete: if owns(uid);
+      allow create, update: if owns(uid)
+        && validNotification(uid, notificationId, request.resource.data);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

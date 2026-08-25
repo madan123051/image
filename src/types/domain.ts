@@ -17,6 +17,13 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type ReminderChannel = 'in-app' | 'push' | 'email';
 export type ShareRole = 'owner' | 'editor' | 'viewer';
 export type RoutineFlexibility = 'fixed' | 'flexible';
+export type SyncMode = 'demo' | 'connecting' | 'synced' | 'saving' | 'offline' | 'error';
+
+export interface PlannerSyncState {
+  mode: SyncMode;
+  message: string;
+  hasPendingWrites: boolean;
+}
 
 export interface User {
   id: string;
@@ -135,6 +142,11 @@ export interface Reminder {
   important: boolean;
   completed: boolean;
   channels: ReminderChannel[];
+  notes: string;
+  recurrenceRule: string | null;
+  snoozedUntil: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Routine {
@@ -147,17 +159,24 @@ export interface Routine {
   reminderMinutes: number;
   flexibility: RoutineFlexibility;
   color: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface NotificationItem {
   id: string;
   userId: string;
+  sourceId: string;
   type: 'event' | 'task' | 'missed-task' | 'birthday' | 'bill' | 'countdown' | 'shared';
   title: string;
   message: string;
   scheduledAt: string;
   channels: ReminderChannel[];
   read: boolean;
+  readAt: string | null;
+  deliveredAt: string | null;
+  createdAt: string;
 }
 
 export interface PlannerProposalItem {

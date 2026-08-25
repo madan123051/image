@@ -1,4 +1,11 @@
 import type { User } from '../types/domain';
+import {
+  onAuthStateChanged,
+  signInAnonymously,
+  signOut as firebaseSignOut,
+  type Auth,
+  type User as FirebaseUser,
+} from 'firebase/auth';
 
 export interface AuthSession {
   user: User;
@@ -29,6 +36,57 @@ export class DemoAuthProvider implements AuthProvider {
 
   async signOut(): Promise<void> {
     return Promise.resolve();
+  }
+}
+
+function toDomainUser(user: FirebaseUser): User {
+  return {
+    id: user.uid,
+    email: user.email ?? '',
+    displayName: user.displayName ?? 'Madan',
+    avatarUrl: user.photoURL ?? undefined,
+    createdAt: user.metadata.creationTime
+      ? new Date(user.metadata.creationTime).toISOString()
+      : new Date().toISOString(),
+  };
+}
+
+function readInitialUser(auth: Auth): Promise<FirebaseUser | null> {
+  return new Promise((resolve, reject) => {
+    let unsubscribe: () => void = () => undefined;
+    unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        unsubscribe();
+        resolve(user);
+      },
+      (error) => {
+        unsubscribe();
+        reject(error);
+      },
+    );
+  });
+}
+
+export class FirebaseAnonymousAuthProvider implements AuthProvider {
+  constructor(private readonly auth: Auth) {}
+
+  async getSession(): Promise<AuthSession> {
+    const existing = await readInitialUser(this.auth);
+    const user = existing ?? (await signInAnonymously(this.auth)).user;
+    return { user: toDomainUser(user) };
+  }
+
+  async signInWithEmail(): Promise<AuthSession> {
+    throw new Error('Email sign-in is not enabled for this release.');
+  }
+
+  async signInWithOAuth(): Promise<AuthSession> {
+    throw new Error('OAuth sign-in is not enabled for this release.');
+  }
+
+  async signOut(): Promise<void> {
+    await firebaseSignOut(this.auth);
   }
 }
 

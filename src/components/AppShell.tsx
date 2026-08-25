@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import type { AppSection, Language } from '../types/domain';
+import type { AppSection, Language, NotificationItem, PlannerSyncState } from '../types/domain';
 import type { CopyKey } from '../i18n';
+import { NotificationCenter } from './NotificationCenter';
 
 const navigation: Array<{ id: AppSection; label: CopyKey; icon: string }> = [
   { id: 'today', label: 'today', icon: '⌂' },
@@ -17,11 +18,16 @@ interface AppShellProps {
   activeSection: AppSection;
   language: Language;
   labels: Record<CopyKey, string>;
+  notifications: NotificationItem[];
+  sync: PlannerSyncState;
+  userName: string;
   searchQuery: string;
   onNavigate(section: AppSection): void;
   onAdd(): void;
   onSearch(query: string): void;
   onToggleLanguage(): void;
+  onMarkNotificationRead(notificationId: string): void;
+  onMarkAllNotificationsRead(): void;
   children: ReactNode;
 }
 
@@ -29,11 +35,16 @@ export function AppShell({
   activeSection,
   language,
   labels,
+  notifications,
+  sync,
+  userName,
   searchQuery,
   onNavigate,
   onAdd,
   onSearch,
   onToggleLanguage,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
   children,
 }: AppShellProps) {
   const mobileItems = navigation.slice(0, 4);
@@ -64,9 +75,9 @@ export function AppShell({
           ))}
         </nav>
         <div className="sidebar-foot">
-          <div className="storage-note">
-            <span className="status-dot" />
-            <span><strong>Demo workspace</strong><small>Provider-ready architecture</small></span>
+          <div className="storage-note" role="status" aria-live="polite">
+            <span className={`status-dot ${sync.mode}`} />
+            <span><strong>{sync.mode === 'demo' ? 'Demo workspace' : 'Firebase workspace'}</strong><small>{sync.message}</small></span>
           </div>
         </div>
       </aside>
@@ -90,10 +101,8 @@ export function AppShell({
             <button className="language-button" type="button" onClick={onToggleLanguage}>
               {language === 'en' ? 'EN · AD' : 'ने · बि.सं.'}
             </button>
-            <button className="icon-button notification-button" type="button" aria-label="Notifications">
-              ♧<span className="notification-badge">2</span>
-            </button>
-            <span className="avatar" aria-label="Madan profile">M</span>
+            <NotificationCenter notifications={notifications} onMarkRead={onMarkNotificationRead} onMarkAllRead={onMarkAllNotificationsRead} />
+            <span className="avatar" aria-label={`${userName} profile`}>{userName.charAt(0).toUpperCase()}</span>
           </div>
         </header>
         <main className="page-stage">{children}</main>
