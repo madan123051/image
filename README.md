@@ -2,6 +2,8 @@
 
 A responsive, accessible monthly calendar with an original prehistoric-jungle identity.
 
+Switch between an English Gregorian calendar and a fully localized नेपाली Bikram Sambat calendar from the language control in the header.
+
 ## 🚀 Quick Start
 
 ```bash
@@ -25,8 +27,11 @@ calendar-app/
 │   └── index.html
 ├── src/
 │   ├── App.js
+│   ├── App.test.js
 │   ├── calendar.js
 │   ├── calendar.test.js
+│   ├── nepaliCalendar.js
+│   ├── nepaliCalendar.test.js
 │   ├── index.js
 │   └── index.css
 ├── package.json
@@ -42,6 +47,8 @@ Visit the deployed app: https://image-peach-ten-25.vercel.app
 - **Frontend**: React
 - **Styling**: CSS
 - **Visual identity**: Original Wildsaura theme and mascot
+- **Calendars**: Gregorian (AD) and Bikram Sambat (BS)
+- **Languages**: English and नेपाली
 - **Deployment**: Vercel
 - **Build Tool**: Standard React build setup
 
