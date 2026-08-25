@@ -84,6 +84,12 @@ export function TodayPage({
   const displayedDate = language === 'ne'
     ? `${toNepaliNumerals(nepali.year)} ${NEPALI_MONTHS[nepali.month - 1]} ${toNepaliNumerals(nepali.day)}, ${new Intl.DateTimeFormat('ne-NP', { weekday: 'long' }).format(now)}`
     : englishDate;
+  const plannerTime = new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', {
+    timeZone: preferences.timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(now);
+  const timezoneLabel = preferences.timezone.split('/').pop()?.replace(/_/g, ' ') ?? preferences.timezone;
 
   return (
     <div className="page today-page">
@@ -93,9 +99,9 @@ export function TodayPage({
           <h1>{labels.greeting}, {user.displayName}.</h1>
           <p>{labels.focus}</p>
         </div>
-        <div className="weather-chip" title="Weather provider placeholder">
-          <span aria-hidden="true">◌</span>
-          <span><strong>24°</strong><small>Tokyo · API ready</small></span>
+        <div className="weather-chip" title={`Planner time zone: ${preferences.timezone}`}>
+          <span aria-hidden="true">◷</span>
+          <span><strong>{plannerTime}</strong><small>{timezoneLabel} · planner time</small></span>
         </div>
       </header>
 
