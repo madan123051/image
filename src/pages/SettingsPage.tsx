@@ -34,7 +34,7 @@ export function SettingsPage({ preferences, labels, sync, persistentCache, notif
   };
 
   return <div className="page simple-page settings-page">
-    <header className="page-heading compact-heading"><div><p className="eyebrow">Make it yours</p><h1>{labels.settings}</h1><p>Every control below saves to your Firebase workspace.</p></div></header>
+    <header className="page-heading compact-heading"><div><p className="eyebrow">Make it yours</p><h1>{labels.settings}</h1><p>Every control below saves to your private cloud workspace.</p></div></header>
     <div className="settings-layout"><nav className="settings-nav" aria-label="Settings sections">
       {(['general', 'planning', 'notifications', 'shared'] as SettingsTab[]).map((item) => <button className={tab === item ? 'active' : ''} type="button" key={item} onClick={() => setTab(item)}>{item === 'shared' ? 'Shared & account' : `${item.charAt(0).toUpperCase()}${item.slice(1)}`}</button>)}
     </nav><section className="content-panel settings-panel">
