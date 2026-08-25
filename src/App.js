@@ -2,8 +2,9 @@ import React from 'react';
 
 function App() {
   return (
-    <div className="App">
-      <h1>Calendar App</h1>
+    <div>
+      <h1>My Calendar App</h1>
+      {/* Your calendar UI here */}
     </div>
   );
 }
