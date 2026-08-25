@@ -9,6 +9,9 @@ import type {
 import { addDays, addMinutes, localDateTime, toDateKey } from '../utils/date';
 import { suggestFreeTime } from './calendarService';
 
+const TWELVE_HOUR_TIME_PATTERN = /\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)\b/i;
+const TWELVE_HOUR_TIME_REPLACEMENT_PATTERN = /\b(?:1[0-2]|0?[1-9])(?::[0-5]\d)?\s*(?:am|pm)\b/gi;
+
 export interface PlannerContext {
   events: CalendarEvent[];
   tasks: PlannerTask[];
@@ -29,7 +32,7 @@ function parseRelativeDate(input: string): Date {
 }
 
 function parseTime(input: string): string {
-  const match = input.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+  const match = input.match(TWELVE_HOUR_TIME_PATTERN);
   if (!match) return '09:00';
   let hour = Number(match[1]);
   const minute = Number(match[2] ?? '0');
@@ -57,7 +60,7 @@ export class LocalRulesAIProvider implements AIPlannerProvider {
     const title = input
       .replace(/\btomorrow\b/gi, '')
       .replace(/\btoday\b/gi, '')
-      .replace(/\b\d{1,2}(?::\d{2})?\s*(am|pm)\b/gi, '')
+      .replace(TWELVE_HOUR_TIME_REPLACEMENT_PATTERN, '')
       .replace(/,?\s*remind me.*$/gi, '')
       .replace(/^\s+|\s+$/g, '') || 'New event';
     return {
@@ -137,8 +140,10 @@ export class LocalRulesAIProvider implements AIPlannerProvider {
 
 export function quickAddPreviewToDates(preview: QuickAddPreview): { start: string; end: string } {
   const start = localDateTime(preview.date, preview.startTime ?? '09:00');
-  const end = preview.endTime
-    ? localDateTime(preview.date, preview.endTime)
-    : addMinutes(new Date(start), 60).toISOString();
-  return { start, end };
+  const startDate = new Date(start);
+  const parsedEnd = preview.endTime
+    ? new Date(localDateTime(preview.date, preview.endTime))
+    : addMinutes(startDate, 60);
+  const endDate = parsedEnd <= startDate ? addDays(parsedEnd, 1) : parsedEnd;
+  return { start, end: endDate.toISOString() };
 }
