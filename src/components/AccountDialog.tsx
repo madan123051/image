@@ -4,6 +4,7 @@ import {
   createFirebaseAccount,
   requestFirebasePasswordReset,
   signInToFirebase,
+  signInWithGoogle,
   signOutFirebaseAccount,
   updateFirebaseProfile,
 } from '../services/authService';
@@ -25,6 +26,11 @@ function friendlyError(error: unknown): string {
   if (message.includes('invalid-credential')) return 'Email or password is incorrect.';
   if (message.includes('weak-password')) return 'Use at least 8 characters for your password.';
   if (message.includes('network-request-failed')) return 'You appear to be offline. Try again after reconnecting.';
+  if (message.includes('popup-closed-by-user')) return 'Google sign-in was cancelled.';
+  if (message.includes('popup-blocked')) return 'Allow pop-ups for Wildsaura, then try Google sign-in again.';
+  if (message.includes('unauthorized-domain')) return 'Google sign-in is not authorized for this domain yet.';
+  if (message.includes('account-exists-with-different-credential')) return 'That email uses a different sign-in method. Sign in with email first.';
+  if (message.includes('operation-not-allowed')) return 'Google sign-in is not enabled for this project.';
   return message.replace(/^Firebase:\s*/i, '');
 }
 
@@ -78,13 +84,15 @@ export function AccountDialog({ open, user, isAnonymous, data, onClose }: Accoun
   return <Modal open={open} title="Your Wildsaura account" onClose={onClose} className="account-modal">
     <div className="account-hero">
       <span className="account-avatar">{user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : user.displayName.charAt(0).toUpperCase()}</span>
-      <span><small>{isAnonymous ? 'Guest workspace' : 'Firebase account'}</small><strong>{user.displayName}</strong><p>{user.email || 'Secure this workspace to use it on every device.'}</p></span>
+      <span><small>{isAnonymous ? 'Guest workspace' : 'Wildsaura account'}</small><strong>{user.displayName}</strong><p>{user.email || 'Secure this workspace to use it on every device.'}</p></span>
       <b className={isAnonymous ? 'account-state guest' : 'account-state secure'}>{isAnonymous ? 'Guest' : 'Secured'}</b>
     </div>
 
     {view === 'overview' ? <div className="account-overview">
-      <div className="account-benefits"><span>✓ Firebase sync</span><span>✓ Offline-safe changes</span><span>✓ Private planner data</span></div>
+      <div className="account-benefits"><span>✓ Multi-device sync</span><span>✓ Offline-safe changes</span><span>✓ Private planner data</span></div>
       {isAnonymous ? <>
+        <button className="google-auth-button wide-button" type="button" disabled={busy} onClick={() => void run(signInWithGoogle, 'Google account connected. Loading your planner…')}><span className="google-mark" aria-hidden="true">G</span>{busy ? 'Connecting…' : 'Continue with Google'}</button>
+        <div className="account-divider"><span>or use email</span></div>
         <button className="primary-button wide-button" type="button" onClick={() => setView('signup')}>Secure this guest workspace</button>
         <button className="secondary-button wide-button" type="button" onClick={() => setView('signin')}>Sign in to an existing account</button>
       </> : <>

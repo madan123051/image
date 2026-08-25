@@ -1,10 +1,14 @@
 import type { AppData, User } from '../types/domain';
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  linkWithPopup,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInAnonymously,
+  signInWithCredential,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut as firebaseSignOut,
   updateProfile,
   type Auth,
@@ -164,6 +168,32 @@ export async function signInToFirebase(email: string, password: string): Promise
   if (!services) throw new Error('Firebase authentication is not configured.');
   const result = await signInWithEmailAndPassword(services.auth, email.trim(), password);
   return { user: toDomainUser(result.user), isAnonymous: false };
+}
+
+export async function signInWithGoogle(): Promise<AuthSession> {
+  const services = await getFirebaseServices();
+  if (!services) throw new Error('Firebase authentication is not configured.');
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const current = services.auth.currentUser;
+  let firebaseUser: FirebaseUser;
+
+  if (current?.isAnonymous) {
+    try {
+      firebaseUser = (await linkWithPopup(current, provider)).user;
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (code !== 'auth/credential-already-in-use') throw error;
+      const credential = GoogleAuthProvider.credentialFromError(error as Parameters<typeof GoogleAuthProvider.credentialFromError>[0]);
+      if (!credential) throw error;
+      firebaseUser = (await signInWithCredential(services.auth, credential)).user;
+    }
+  } else {
+    firebaseUser = (await signInWithPopup(services.auth, provider)).user;
+  }
+
+  const user = await saveAuthenticatedProfile(firebaseUser);
+  return { user, isAnonymous: false };
 }
 
 export async function updateFirebaseProfile(displayName: string, avatarUrl: string): Promise<User> {

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { AppSection, Language, NotificationItem, PlannerSyncState } from '../types/domain';
+import type { AppSection, Language, NotificationItem } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { NotificationCenter } from './NotificationCenter';
 
@@ -19,7 +19,6 @@ interface AppShellProps {
   language: Language;
   labels: Record<CopyKey, string>;
   notifications: NotificationItem[];
-  sync: PlannerSyncState;
   userName: string;
   avatarUrl?: string;
   isAnonymous: boolean;
@@ -40,7 +39,6 @@ export function AppShell({
   language,
   labels,
   notifications,
-  sync,
   userName,
   avatarUrl,
   isAnonymous,
@@ -83,12 +81,6 @@ export function AppShell({
             </button>
           ))}
         </nav>
-        <div className="sidebar-foot">
-          <div className="storage-note" role="status" aria-live="polite">
-            <span className={`status-dot ${sync.mode}`} />
-            <span><strong>{sync.mode === 'demo' ? 'Local workspace' : 'Firebase workspace'}</strong><small>{sync.message}</small></span>
-          </div>
-        </div>
       </aside>
 
       <div className="app-stage">

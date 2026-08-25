@@ -237,7 +237,7 @@ function App() {
   })();
 
   return <>
-    <AppShell activeSection={section} language={store.language} labels={labels} notifications={notifications} sync={store.sync} userName={user.displayName} avatarUrl={user.avatarUrl} isAnonymous={store.isAnonymous} searchQuery={searchQuery} onNavigate={navigate} onAdd={() => setQuickAddOpen(true)} onSearch={setSearchQuery} onToggleLanguage={() => store.setLanguage(store.language === 'en' ? 'ne' : 'en')} onMarkNotificationRead={store.markNotificationRead} onMarkAllNotificationsRead={store.markAllNotificationsRead} onOpenNotification={openNotification} onOpenAccount={() => setAccountDialogOpen(true)}>
+    <AppShell activeSection={section} language={store.language} labels={labels} notifications={notifications} userName={user.displayName} avatarUrl={user.avatarUrl} isAnonymous={store.isAnonymous} searchQuery={searchQuery} onNavigate={navigate} onAdd={() => setQuickAddOpen(true)} onSearch={setSearchQuery} onToggleLanguage={() => store.setLanguage(store.language === 'en' ? 'ne' : 'en')} onMarkNotificationRead={store.markNotificationRead} onMarkAllNotificationsRead={store.markAllNotificationsRead} onOpenNotification={openNotification} onOpenAccount={() => setAccountDialogOpen(true)}>
       {page}
       <SearchResults query={searchQuery} results={results} onSelect={selectSearchResult} onClose={() => setSearchQuery('')} />
     </AppShell>
