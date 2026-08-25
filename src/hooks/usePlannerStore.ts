@@ -167,7 +167,7 @@ export function usePlannerStore(): PlannerStore {
                   ? 'Saving changes…'
                   : snapshot.fromCache
                     ? 'Restoring saved planner…'
-                    : 'Saved securely in Firebase',
+                    : 'Your planner is up to date',
               hasPendingWrites: snapshot.hasPendingWrites,
             });
           },

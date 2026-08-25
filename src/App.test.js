@@ -40,4 +40,14 @@ describe('Wildsaura application shell', () => {
     expect(document.body.querySelector('.quick-add-dialog')).not.toBeNull();
     expect(document.body.querySelector('.natural-add')).not.toBeNull();
   });
+
+  it('offers Google login without the old Firebase sidebar status line', () => {
+    act(() => root.render(<App />));
+    const profileButton = container.querySelector('.profile-button');
+    act(() => profileButton.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+
+    expect(document.body.querySelector('.google-auth-button').textContent).toContain('Continue with Google');
+    expect(container.querySelector('.storage-note')).toBeNull();
+    expect(container.textContent).not.toContain('Firebase workspace');
+  });
 });
