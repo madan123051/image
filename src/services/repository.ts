@@ -19,6 +19,8 @@ export interface LifePlannerRepository {
     onError: (error: Error) => void,
   ): () => void;
   getCalendars(userId: string): Promise<CalendarDefinition[]>;
+  saveCalendar(userId: string, calendar: CalendarDefinition): Promise<CalendarDefinition>;
+  deleteCalendar(userId: string, calendarId: string): Promise<void>;
   getEvents(userId: string): Promise<CalendarEvent[]>;
   saveEvent(userId: string, event: CalendarEvent): Promise<CalendarEvent>;
   deleteEvent(userId: string, eventId: string): Promise<void>;
@@ -61,6 +63,21 @@ export class InMemoryLifePlannerRepository implements LifePlannerRepository {
 
   async getCalendars(userId: string): Promise<CalendarDefinition[]> {
     return this.data.calendars.filter((calendar) => calendar.userId === userId);
+  }
+
+  async saveCalendar(userId: string, calendar: CalendarDefinition): Promise<CalendarDefinition> {
+    assertOwnedBy(userId, calendar.userId);
+    const existing = this.data.calendars.findIndex((item) => item.id === calendar.id);
+    if (existing >= 0) this.data.calendars[existing] = calendar;
+    else this.data.calendars.push(calendar);
+    return calendar;
+  }
+
+  async deleteCalendar(userId: string, calendarId: string): Promise<void> {
+    const calendar = this.data.calendars.find((item) => item.id === calendarId);
+    if (!calendar) return;
+    assertOwnedBy(userId, calendar.userId);
+    this.data.calendars = this.data.calendars.filter((item) => item.id !== calendarId);
   }
 
   async getEvents(userId: string): Promise<CalendarEvent[]> {

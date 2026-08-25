@@ -5,9 +5,10 @@ interface NotificationCenterProps {
   notifications: NotificationItem[];
   onMarkRead(notificationId: string): void;
   onMarkAllRead(): void;
+  onOpen(notification: NotificationItem): void;
 }
 
-export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }: NotificationCenterProps) {
+export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead, onOpen }: NotificationCenterProps) {
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
@@ -40,7 +41,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
           className={notification.read ? 'notification-row' : 'notification-row unread'}
           type="button"
           key={notification.id}
-          onClick={() => onMarkRead(notification.id)}
+          onClick={() => { onMarkRead(notification.id); onOpen(notification); setOpen(false); }}
         >
           <i />
           <span><strong>{notification.title}</strong><small>{notification.message}</small><time>{new Date(notification.scheduledAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</time></span>

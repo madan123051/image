@@ -59,6 +59,16 @@ export interface CalendarDefinition {
   visible: boolean;
   isPrivate: boolean;
   role: ShareRole;
+  members?: CalendarMember[];
+  inviteCode?: string | null;
+}
+
+export interface CalendarMember {
+  id: string;
+  name: string;
+  email: string;
+  role: Exclude<ShareRole, 'owner'>;
+  status: 'invited' | 'active';
 }
 
 export interface EventReminder {

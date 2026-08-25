@@ -36,6 +36,9 @@ button { color: inherit; }
 .search-box input { width: 100%; height: 38px; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; }
 .search-box kbd { padding: 2px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--paper); color: var(--muted); font-size: 9px; white-space: nowrap; }
 .top-actions { display: flex; align-items: center; gap: 10px; }
+.profile-button { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border: 1px solid transparent; border-radius: 12px; background: transparent; cursor: pointer; text-align: left; }
+.profile-button:hover { border-color: var(--line); background: var(--canvas); } .profile-button > span:last-child { display: grid; gap: 1px; } .profile-button strong { max-width: 110px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; } .profile-button small { color: var(--muted); font-size: 7px; }
+.avatar img,.account-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
 .language-button { height: 36px; padding: 0 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); cursor: pointer; color: var(--forest-700); font-size: 11px; font-weight: 800; }
 .icon-button { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; }
 .notification-button { position: relative; }
@@ -194,6 +197,8 @@ button { color: inherit; }
 .switch-control > span { position: relative; width: 34px; height: 19px; border-radius: 999px; background: var(--line); transition: background .2s ease; } .switch-control > span::after { position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--paper); box-shadow: 0 1px 4px rgba(0,0,0,.18); content: ''; transition: transform .2s ease; }
 .switch-control input:checked + span { background: var(--forest-700); } .switch-control input:checked + span::after { transform: translateX(15px); } .switch-control input:focus-visible + span { outline: 2px solid var(--amber); outline-offset: 2px; } .switch-control small { color: var(--muted); font-size: 7px; }
 .shared-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.member-stack button { display: grid; width: 31px; height: 31px; place-items: center; margin-left: -7px; border: 2px solid var(--paper); border-radius: 50%; background: var(--forest-800); color: #fff; cursor: pointer; font-size: 9px; }
+.shared-empty-card { align-content: center; min-height: 220px; text-align: center; } .shared-empty-card > span { color: var(--amber); font-size: 34px; } .shared-empty-card h2 { margin: 10px 0 5px; }
 .shared-card { padding: 22px; } .shared-card header { display: flex; align-items: center; gap: 12px; }
 .shared-card header > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; color: #fff; font-weight: 900; } .shared-card header > div { flex: 1; }
 .shared-card h2 { margin: 0; font: 500 22px Georgia,serif; } .shared-card p { margin: 3px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
@@ -214,6 +219,14 @@ button { color: inherit; }
 .completion-ring-panel h2 { margin: 19px 0 4px; font: 500 21px Georgia,serif; } .completion-ring-panel p { max-width: 270px; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .settings-layout { display: grid; grid-template-columns: 170px minmax(0,1fr); gap: 22px; }
 .settings-nav { display: grid; align-content: start; gap: 4px; } .settings-nav button { height: 39px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; cursor: pointer; text-align: left; color: var(--muted); font-size: 11px; font-weight: 750; } .settings-nav button.active { background: var(--forest-100); color: var(--forest-700); }
+.working-day-picker { display: flex; gap: 4px; } .working-day-picker button { width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 8px; background: var(--canvas); cursor: pointer; font-size: 8px; } .working-day-picker button.active { border-color: var(--forest-700); background: var(--forest-700); color: #fff; }
+.account-setting-card { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); } .account-setting-card > span:nth-child(2) { display: grid; gap: 3px; } .account-setting-card small { color: var(--muted); font-size: 8px; }
+.account-avatar { display: grid; width: 66px; height: 66px; place-items: center; overflow: hidden; border-radius: 19px; background: var(--forest-800); color: #fff; font: 700 25px Georgia,serif; } .account-avatar.small { width: 42px; height: 42px; border-radius: 12px; font-size: 16px; }
+.account-modal { width: min(100%,520px); } .account-hero { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 14px; padding: 22px; background: linear-gradient(135deg,var(--forest-900),var(--forest-700)); color: #fff; } .account-hero > span:nth-child(2) { display: grid; gap: 2px; } .account-hero small { color: #b8d1c6; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; } .account-hero strong { font: 600 21px Georgia,serif; } .account-hero p { margin: 0; color: #d7e5de; font-size: 8px; }
+.account-state { padding: 6px 8px; border-radius: 999px; font-size: 7px; text-transform: uppercase; } .account-state.guest { background: var(--amber); color: #2d200c; } .account-state.secure { background: rgba(255,255,255,.14); }
+.account-overview { display: grid; gap: 9px; padding: 20px; } .account-benefits { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-bottom: 8px; } .account-benefits span { padding: 10px 7px; border: 1px solid var(--line); border-radius: 9px; background: var(--canvas); color: var(--forest-700); font-size: 8px; text-align: center; } .account-form .account-reset { justify-self: start; }
+.calendar-share-toggle { align-self: end; min-height: 39px; } .calendar-invite-actions { display: flex; gap: 8px; } .calendar-invite-actions a { display: inline-flex; align-items: center; text-decoration: none; } .field > small { color: var(--muted); font-size: 8px; line-height: 1.45; }
+.mobile-more-menu { display: none; }
 .settings-panel { overflow: hidden; } .setting-group { padding: 23px; border-bottom: 1px solid var(--line); } .setting-group:last-child { border: 0; }
 .setting-group header h2 { margin: 0; font: 500 22px Georgia,serif; } .setting-group header p { margin: 5px 0 10px; color: var(--muted); font-size: 10px; }
 .setting-row,.provider-row { display: flex; min-height: 67px; align-items: center; justify-content: space-between; gap: 25px; border-top: 1px solid var(--line); }
@@ -298,7 +311,10 @@ button { color: inherit; }
   .settings-layout { grid-template-columns: 1fr; } .settings-nav { display: flex; overflow-x: auto; } .settings-nav button { white-space: nowrap; }
 }
 @media (max-width: 560px) {
-  .top-actions .avatar { display: none; } .language-button { padding: 0 8px; }
+  .profile-button > span:last-child { display: none; } .profile-button { padding: 3px; } .profile-button .avatar { display: grid; } .language-button { padding: 0 8px; }
+  .mobile-more-menu { position: fixed; z-index: 85; right: 12px; bottom: 71px; display: grid; min-width: 180px; padding: 7px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: 0 18px 45px rgba(0,0,0,.2); } .mobile-more-menu button { display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: var(--ink); cursor: pointer; font-weight: 750; text-align: left; } .mobile-more-menu button:hover { background: var(--forest-100); } .mobile-more-menu span { width: 20px; color: var(--forest-700); text-align: center; }
+  .account-hero { grid-template-columns: auto minmax(0,1fr); } .account-state { grid-column: 2; justify-self: start; } .account-benefits { grid-template-columns: 1fr; }
+  .account-setting-card { grid-template-columns: auto minmax(0,1fr); } .account-setting-card button { grid-column: 1 / -1; }
   .page-heading { align-items: flex-start; flex-direction: column; gap: 14px; } .page-heading > .primary-button { width: 100%; } .weather-chip { align-self: stretch; }
   .summary-strip > * { padding: 15px; } .summary-strip strong { font-size: 22px; } .today-aside { grid-template-columns: 1fr; }
   .timeline-panel { padding: 17px; } .timeline-item { grid-template-columns: 51px 15px minmax(0,1fr); } .timeline-item .status-pill { display: none; } .timeline-content { padding-right: 0; }
