@@ -107,10 +107,18 @@ button {
   mask-image: linear-gradient(to bottom, black, transparent 62%);
 }
 
-.brand-lockup {
+.brand-topbar {
   position: relative;
   z-index: 3;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand-lockup {
+  display: flex;
+  min-width: 0;
   align-items: center;
   gap: 0.7rem;
 }
@@ -135,6 +143,42 @@ button {
   font-size: 1.45rem;
   font-weight: 700;
   letter-spacing: -0.03em;
+}
+
+.language-switcher {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.2rem;
+  padding: 0.22rem;
+  border: 1px solid rgba(245, 240, 217, 0.18);
+  border-radius: 999px;
+  background: rgba(7, 28, 23, 0.34);
+}
+
+.language-switcher button {
+  padding: 0.48rem 0.72rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 253, 242, 0.62);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.language-switcher button:hover {
+  color: var(--cream-50);
+}
+
+.language-switcher button.active {
+  background: var(--amber-400);
+  color: var(--forest-900);
+}
+
+.language-switcher button:focus-visible {
+  outline: 3px solid rgba(239, 169, 58, 0.48);
+  outline-offset: 3px;
 }
 
 .brand-copy {
@@ -201,10 +245,10 @@ button {
 .wildsaura-mascot {
   position: absolute;
   z-index: 2;
-  width: clamp(21rem, 34vw, 31rem);
+  width: clamp(19rem, 29vw, 25rem);
   max-width: none;
-  right: clamp(-9rem, -8vw, -5rem);
-  bottom: clamp(-8rem, -8vw, -4rem);
+  right: 0.75rem;
+  bottom: -5.5rem;
   filter: drop-shadow(0 1.6rem 2.5rem rgba(0, 0, 0, 0.3));
   pointer-events: none;
   user-select: none;
@@ -350,6 +394,17 @@ button {
   transform: translateY(-2px);
 }
 
+.month-button:disabled {
+  opacity: 0.32;
+  cursor: default;
+  transform: none;
+}
+
+.month-button:hover:disabled {
+  background: rgba(245, 240, 217, 0.5);
+  color: var(--forest-800);
+}
+
 .month-button:focus-visible,
 .today-button:focus-visible {
   outline: 3px solid rgba(239, 169, 58, 0.48);
@@ -460,6 +515,33 @@ button {
   box-shadow: 0 0 0 2px rgba(27, 86, 67, 0.12);
 }
 
+.language-ne {
+  font-family: "Nirmala UI", Mangal, "Segoe UI", sans-serif;
+}
+
+.language-ne .brand-copy h1,
+.language-ne .month-heading h2,
+.language-ne .today-copy,
+.language-ne .calendar-footer p {
+  font-family: "Nirmala UI", Mangal, "Segoe UI", sans-serif;
+  font-style: normal;
+  letter-spacing: -0.025em;
+}
+
+.language-ne .brand-copy h1 {
+  font-size: clamp(2.25rem, 3.7vw, 3.65rem);
+  line-height: 1.12;
+}
+
+.language-ne .brand-copy h1 span {
+  margin-top: 0.15em;
+  font-style: normal;
+}
+
+.language-ne .brand-intro {
+  line-height: 1.75;
+}
+
 @media (max-width: 900px) {
   .wildsaura-app {
     grid-template-columns: 1fr;
@@ -479,10 +561,14 @@ button {
     font-size: clamp(2.4rem, 8vw, 3.7rem);
   }
 
+  .language-ne .brand-copy h1 {
+    font-size: clamp(2.15rem, 7vw, 3.25rem);
+  }
+
   .wildsaura-mascot {
-    width: clamp(20rem, 58vw, 28rem);
-    right: -5rem;
-    bottom: -8rem;
+    width: clamp(18rem, 44vw, 24rem);
+    right: 0.5rem;
+    bottom: -6rem;
   }
 
   .mascot-note {
@@ -530,9 +616,18 @@ button {
   }
 
   .wildsaura-mascot {
-    width: 20rem;
-    right: -6.7rem;
-    bottom: -5.8rem;
+    width: 17rem;
+    right: -1.2rem;
+    bottom: -4.8rem;
+  }
+
+  .brand-name {
+    font-size: 1.2rem;
+  }
+
+  .language-switcher button {
+    padding: 0.42rem 0.55rem;
+    font-size: 0.62rem;
   }
 
   .calendar-panel {
