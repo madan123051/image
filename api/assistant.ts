@@ -8,7 +8,7 @@ import type { CalendarEvent, PlannerTask, Routine, UserPreferences } from '../sr
 
 export const config = { maxDuration: 60 };
 
-const MODEL_ID = 'gemini-3.7-flash';
+const MODEL_ID = 'gemini-3.5-flash-lite';
 const RATE_WINDOW_MS = 5 * 60_000;
 const RATE_LIMIT = 15;
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();

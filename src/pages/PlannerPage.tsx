@@ -55,7 +55,7 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
   return <div className="page planner-page">
     <header className="page-heading compact-heading">
       <div><p className="eyebrow">Gemini command planning</p><h1>{labels.aiPlanner}</h1><p>{labels.plannerPrompt}</p></div>
-      <span className="provider-chip"><i /> Gemini 3.7 Flash · secure Vercel API</span>
+      <span className="provider-chip"><i /> Gemini 3.5 Flash Lite · secure Vercel API</span>
     </header>
     <div className="planner-layout">
       <section className="content-panel planner-prompt-panel">
