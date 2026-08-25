@@ -1,6 +1,7 @@
 {
   "name": "calendar-app",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "build": "react-scripts build",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" --max-warnings=0",
