@@ -1,7 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css'; // ✅ Add this line
+import './index.css';
 import App from './App';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error('Unable to find the root element');
+}
+
+const root = ReactDOM.createRoot(rootElement);
 root.render(<App />);
