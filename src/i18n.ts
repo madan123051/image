@@ -55,7 +55,7 @@ export const copy = {
     preview: 'Preview',
     confirmSave: 'Confirm & save',
     aiPlanner: 'AI Planner',
-    plannerPrompt: 'Tell Wildsaura what you need to make time for.',
+    plannerPrompt: 'Tell Aayoj Assistant what you need to make time for.',
     applyPlan: 'Apply plan',
     regenerate: 'Regenerate',
     modify: 'Modify',

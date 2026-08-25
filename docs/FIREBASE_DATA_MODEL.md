@@ -1,6 +1,6 @@
 # Firebase data model and security boundary
 
-Wildsaura uses Firebase Authentication and Cloud Firestore for its Phase 2
+Aayoj uses Firebase Authentication and Cloud Firestore for its Phase 2
 persistence layer. The current release signs each browser into Firebase
 anonymously, then stores every planner document below that Firebase user's UID.
 

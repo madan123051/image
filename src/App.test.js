@@ -2,7 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-describe('Wildsaura application shell', () => {
+describe('Aayoj application shell', () => {
   let container;
   let root;
 

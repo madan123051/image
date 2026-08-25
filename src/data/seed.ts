@@ -87,7 +87,7 @@ export function createSeedData(): AppData {
     users: [
       {
         id: DEMO_USER_ID,
-        email: 'demo@wildsaura.app',
+        email: 'demo@aayoj.app',
         displayName: 'Madan',
         createdAt: now.toISOString(),
       },

@@ -1,7 +1,7 @@
 {
-  "short_name": "Wildsaura",
-  "name": "Wildsaura Smart Life Planner",
-  "description": "Calendar, tasks, routines and approval-first smart planning in one calm workspace.",
+  "short_name": "Aayoj",
+  "name": "Aayoj — Smart Life Planner",
+  "description": "A calm bilingual planner for calendars, tasks, routines, reminders and approval-first assistance.",
   "id": "/",
   "start_url": "/#/today",
   "display": "standalone",
@@ -11,10 +11,28 @@
   "categories": ["productivity", "lifestyle"],
   "icons": [
     {
-      "src": "icons/wildsaura-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "icons/aayoj-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/aayoj-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/aayoj-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/aayoj-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [

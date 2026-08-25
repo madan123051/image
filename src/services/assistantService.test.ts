@@ -19,7 +19,7 @@ describe('assistant service', () => {
     expect(assistantRequestSchema.safeParse({ prompt: 'Plan my week', context }).success).toBe(true);
   });
 
-  it('rejects oversized and empty prompts before they reach Gemini', () => {
+  it('rejects oversized and empty prompts before they reach the assistant provider', () => {
     const context = buildAssistantContext(createSeedData(), DEMO_USER_ID);
     expect(assistantRequestSchema.safeParse({ prompt: '', context }).success).toBe(false);
     expect(assistantRequestSchema.safeParse({ prompt: 'x'.repeat(2_001), context }).success).toBe(false);

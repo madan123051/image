@@ -78,7 +78,7 @@ export function ReminderDialog({ open, reminder, userId, timezone, onClose, onSa
 
   return <Modal open={open} title={reminder ? 'Edit reminder' : 'New reminder'} onClose={onClose}>
     <form className="modal-form" onSubmit={submit}>
-      <label className="field full-field"><span>Title</span><input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="What should Wildsaura remember?" /></label>
+      <label className="field full-field"><span>Title</span><input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="What should Aayoj remember?" /></label>
       <label className="field"><span>Type</span><select value={kind} onChange={(event) => setKind(event.target.value as Reminder['kind'])}><option value="custom">Custom</option><option value="bill">Bill</option><option value="birthday">Birthday</option><option value="medication">Medication</option><option value="appointment">Appointment</option><option value="renewal">Renewal</option></select></label>
       <label className="field"><span>Remind at</span><input type="datetime-local" value={remindAt} onChange={(event) => setRemindAt(event.target.value)} required /></label>
       <label className="field"><span>Repeat</span><select value={recurrenceRule} onChange={(event) => setRecurrenceRule(event.target.value)}><option value="">Does not repeat</option><option value="FREQ=DAILY">Daily</option><option value="FREQ=WEEKLY">Weekly</option><option value="FREQ=MONTHLY">Monthly</option><option value="FREQ=YEARLY">Yearly</option></select></label>

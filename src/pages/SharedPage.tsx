@@ -24,7 +24,7 @@ export function SharedPage({ calendars, events, labels, onNewShared, onManage }:
         </article>;
       })}
       {!shared.length ? <article className="content-panel shared-card shared-empty-card"><span>♧</span><h2>No shared calendars yet</h2><p>Create one for family, a trip, a project, or any group schedule.</p><button className="primary-button" type="button" onClick={onNewShared}>Create your first shared calendar</button></article> : null}
-      <article className="content-panel shared-card invite-card"><span>✉</span><h2>Invite family or teammates</h2><p>Add member emails and choose editor or viewer access. Wildsaura keeps the invitation details with the calendar.</p><button className="secondary-button" type="button" onClick={onNewShared}>Create invitation</button></article>
+      <article className="content-panel shared-card invite-card"><span>✉</span><h2>Invite family or teammates</h2><p>Add member emails and choose editor or viewer access. Aayoj keeps the invitation details with the calendar.</p><button className="secondary-button" type="button" onClick={onNewShared}>Create invitation</button></article>
     </div>
   </div>;
 }

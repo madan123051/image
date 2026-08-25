@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import type { AppSection, Language, NotificationItem } from '../types/domain';
 import type { CopyKey } from '../i18n';
+import { BrandMark } from './BrandMark';
 import { NotificationCenter } from './NotificationCenter';
 
 const navigation: Array<{ id: AppSection; label: CopyKey; icon: string }> = [
@@ -59,10 +60,10 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-block">
-          <span className="brand-mark" aria-hidden="true">W</span>
+          <BrandMark />
           <span>
-            <strong>Wildsaura</strong>
-            <small>Life planner</small>
+            <strong>Aayoj</strong>
+            <small>Designed by Wildsaura</small>
           </span>
         </div>
         <button className="add-button sidebar-add" type="button" onClick={onAdd}>
@@ -86,7 +87,8 @@ export function AppShell({
       <div className="app-stage">
         <header className="topbar">
           <button className="mobile-brand" type="button" onClick={() => onNavigate('today')} aria-label="Open Today">
-            <span className="brand-mark">W</span><strong>Wildsaura</strong>
+            <BrandMark />
+            <span className="mobile-brand-copy"><strong>Aayoj</strong><small>Designed by Wildsaura</small></span>
           </button>
           <label className="search-box">
             <span aria-hidden="true">⌕</span>

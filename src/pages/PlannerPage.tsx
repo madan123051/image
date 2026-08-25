@@ -2,8 +2,9 @@ import { useState } from 'react';
 import type { AppData } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import type { AssistantAction, AssistantResponse } from '../services/assistantSchema';
-import { requestWildsauraAssistant } from '../services/assistantService';
+import { requestAayojAssistant } from '../services/assistantService';
 import { AssistantActionList } from '../components/AssistantActionList';
+import { BrandMark } from '../components/BrandMark';
 
 interface PlannerPageProps {
   data: AppData;
@@ -35,9 +36,9 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
     setApplied('');
     setError('');
     try {
-      setProposal(await requestWildsauraAssistant(prompt, data, userId));
+      setProposal(await requestAayojAssistant(prompt, data, userId));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Gemini could not build this plan.');
+      setError(requestError instanceof Error ? requestError.message : 'The assistant could not build this plan.');
     } finally {
       setLoading(false);
     }
@@ -54,16 +55,16 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
 
   return <div className="page planner-page">
     <header className="page-heading compact-heading">
-      <div><p className="eyebrow">Gemini command planning</p><h1>{labels.aiPlanner}</h1><p>{labels.plannerPrompt}</p></div>
-      <span className="provider-chip"><i /> Gemini 3.5 Flash Lite · secure Vercel API</span>
+      <div><p className="eyebrow">Aayoj Assistant</p><h1>{labels.aiPlanner}</h1><p>{labels.plannerPrompt}</p></div>
+      <span className="provider-chip assistant-provider"><BrandMark /> Secure planning assistant</span>
     </header>
     <div className="planner-layout">
       <section className="content-panel planner-prompt-panel">
         <span className="planner-orbit">✦</span>
-        <h2>What should Wildsaura arrange?</h2>
+        <h2>What should your assistant arrange?</h2>
         <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={5} maxLength={2_000} placeholder="Plan, create, update, move, or remove…" />
         <div className="prompt-ideas">{promptIdeas.map((idea) => <button type="button" key={idea} onClick={() => setPrompt(idea)}>{idea}</button>)}</div>
-        <button className="primary-button wide-button" type="button" onClick={generate} disabled={loading || !prompt.trim()}>{loading ? 'Gemini is checking your schedule…' : '✦ Generate safe proposal'}</button>
+        <button className="primary-button wide-button" type="button" onClick={generate} disabled={loading || !prompt.trim()}>{loading ? 'Assistant is checking your schedule…' : '✦ Generate safe proposal'}</button>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
         <div className="planner-context">
           <div><strong>{events.length}</strong><span>events considered</span></div>
@@ -74,7 +75,7 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
 
       <section className="content-panel proposal-panel">
         <header className="section-heading"><div><p className="eyebrow">Approval preview</p><h2>{proposal ? proposal.summary : 'Waiting for your command'}</h2></div>{proposal ? <span className="status-pill preview">preview</span> : null}</header>
-        {!proposal ? <div className="empty-state planner-empty"><span>✦</span><p>Gemini will return a typed proposal. Nothing changes until you press Apply.</p></div> : <>
+        {!proposal ? <div className="empty-state planner-empty"><span>✦</span><p>Your assistant will return a typed proposal. Nothing changes until you press Apply.</p></div> : <>
           <p className="proposal-summary">{proposal.reply}</p>
           {proposal.actions.length ? <AssistantActionList actions={proposal.actions} /> : <div className="empty-state"><span>✓</span><p>No calendar change is needed for this answer.</p></div>}
           {proposal.warnings.map((warning) => <div className="approval-note" key={warning}><span>!</span><p><strong>Review note</strong>{warning}</p></div>)}

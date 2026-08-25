@@ -53,7 +53,7 @@ export function buildAssistantContext(data: AppData, userId: string, now = new D
   };
 }
 
-export async function requestWildsauraAssistant(
+export async function requestAayojAssistant(
   prompt: string,
   data: AppData,
   userId: string,
@@ -71,6 +71,6 @@ export async function requestWildsauraAssistant(
     body: JSON.stringify({ prompt, context: buildAssistantContext(data, userId) }),
   });
   const payload = await response.json().catch(() => null) as { error?: string } | null;
-  if (!response.ok) throw new Error(payload?.error ?? 'Wildsaura assistant could not complete that request.');
+  if (!response.ok) throw new Error(payload?.error ?? 'Aayoj Assistant could not complete that request.');
   return assistantResponseSchema.parse(payload);
 }

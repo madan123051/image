@@ -1,8 +1,8 @@
-# Wildsaura Smart Life Planner
+# Aayoj — Smart Life Planner
 
-Wildsaura is a responsive bilingual life planner with an original
-prehistoric-jungle identity. It combines calendars, tasks, reminders, routines,
-countdowns, notification state and free-time suggestions in one workspace.
+Aayoj is a responsive bilingual life planner designed by Wildsaura. Its calm,
+forest-inspired identity brings calendars, tasks, reminders, routines,
+countdowns, notification state and free-time suggestions into one workspace.
 
 Switching the app language changes both the UI and calendar system:
 

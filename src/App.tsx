@@ -87,7 +87,7 @@ function App() {
       notifications
         .filter((item) => !item.deliveredAt && item.channels.includes('push') && new Date(item.scheduledAt) <= new Date())
         .forEach((item) => {
-          new Notification(item.title, { body: item.message, icon: '/icons/wildsaura-icon.svg', tag: item.id });
+          new Notification(item.title, { body: item.message, icon: '/icons/aayoj-icon-192.png', tag: item.id });
           markNotificationDelivered(item.id);
         });
     };

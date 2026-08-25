@@ -57,7 +57,7 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
     setError('');
     setInviteCode(calendar?.inviteCode ?? createId('invite'));
   }, [calendar, defaultShared, open]);
-  const inviteText = `Join my “${name || 'Wildsaura'}” calendar. Invitation code: ${inviteCode}`;
+  const inviteText = `Join my “${name || 'Aayoj'}” calendar. Invitation code: ${inviteCode}`;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -106,7 +106,7 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
       <label className="field"><span>Color</span><input type="color" value={color} onChange={(event) => setColor(event.target.value)} /></label>
       <label className="toggle-field calendar-share-toggle"><input type="checkbox" checked={shared} onChange={(event) => setShared(event.target.checked)} /><span>Share with people</span></label>
       {shared ? <label className="field full-field"><span>Members</span><textarea rows={5} value={members} onChange={(event) => setMembers(event.target.value)} placeholder={'friend@example.com, editor\nfamily@example.com, viewer'} /><small>One email per line. Add “editor” or “viewer” after a comma. Up to 5 members.</small></label> : null}
-      {shared && calendar ? <div className="calendar-invite-actions full-field"><button className="secondary-button" type="button" onClick={() => void copyInvite()}>Copy invitation</button><a className="secondary-button" href={`mailto:?subject=${encodeURIComponent(`Wildsaura calendar: ${name}`)}&body=${encodeURIComponent(inviteText)}`}>Email invitation</a></div> : null}
+      {shared && calendar ? <div className="calendar-invite-actions full-field"><button className="secondary-button" type="button" onClick={() => void copyInvite()}>Copy invitation</button><a className="secondary-button" href={`mailto:?subject=${encodeURIComponent(`Aayoj calendar: ${name}`)}&body=${encodeURIComponent(inviteText)}`}>Email invitation</a></div> : null}
       {message ? <p className="success-note full-field">{message}</p> : null}
       {error ? <p className="form-error full-field" role="alert">{error}</p> : null}
       <footer className="modal-actions full-field">{calendar ? <button className="danger-button" type="button" onClick={remove} disabled={eventCount > 0} title={eventCount > 0 ? 'Move or delete its events first' : undefined}>Delete</button> : null}<span className="action-spacer" /><button className="secondary-button" type="button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit">{calendar ? 'Save changes' : 'Create calendar'}</button></footer>

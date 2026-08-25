@@ -162,7 +162,7 @@ export function TodayPage({
 
           <section className="content-panel focus-panel">
             <span className="panel-icon">✦</span>
-            <p className="eyebrow">Wildsaura suggestion</p>
+            <p className="eyebrow">Aayoj suggestion</p>
             <h3>Protect a 45-minute focus block</h3>
             <p>You have an open window after lunch. Preview it in the AI Planner before adding it.</p>
             <button className="secondary-button" type="button" onClick={() => onOpenTasks()}>Review tasks</button>

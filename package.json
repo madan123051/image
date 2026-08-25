@@ -1,5 +1,5 @@
 {
-  "name": "calendar-app",
+  "name": "aayoj-life-planner",
   "version": "1.0.0",
   "packageManager": "pnpm@11.19.0",
   "type": "module",

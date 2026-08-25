@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import type { AppData, Language } from '../types/domain';
 import type { AssistantAction, AssistantResponse } from '../services/assistantSchema';
-import { requestWildsauraAssistant } from '../services/assistantService';
+import { requestAayojAssistant } from '../services/assistantService';
 import { AssistantActionList } from './AssistantActionList';
+import { BrandMark } from './BrandMark';
 
 interface AIAssistantProps {
   data: AppData;
@@ -28,10 +29,10 @@ export function AIAssistant({ data, userId, language, onApply, onOpenPlanner }: 
     setError('');
     setApplyMessage('');
     try {
-      setResponse(await requestWildsauraAssistant(prompt, data, userId));
+      setResponse(await requestAayojAssistant(prompt, data, userId));
       setInput('');
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Wildsaura could not answer right now.');
+      setError(requestError instanceof Error ? requestError.message : 'The assistant could not answer right now.');
     } finally {
       setLoading(false);
     }
@@ -51,8 +52,8 @@ export function AIAssistant({ data, userId, language, onApply, onOpenPlanner }: 
     : 'Command me to create, move, plan, update, or remove events, tasks, reminders, and routines.';
 
   return <div className={`assistant ${open ? 'open' : ''}`}>
-    {open ? <section className="assistant-panel" aria-label="Wildsaura AI assistant">
-      <header><span>✦</span><div><strong>Wildsaura assistant</strong><small>Gemini · approval-first commands</small></div><button className="icon-button" type="button" onClick={() => setOpen(false)} aria-label="Close assistant">×</button></header>
+    {open ? <section className="assistant-panel" aria-label="Aayoj Assistant">
+      <header><BrandMark /><div><strong>Aayoj Assistant</strong><small>Private planning · approval-first</small></div><button className="icon-button" type="button" onClick={() => setOpen(false)} aria-label="Close assistant">×</button></header>
       <div className="assistant-answer" aria-live="polite">
         <p>{response?.reply ?? intro}</p>
         {response?.actions.length ? <AssistantActionList actions={response.actions} compact /> : null}
@@ -67,9 +68,9 @@ export function AIAssistant({ data, userId, language, onApply, onOpenPlanner }: 
         <button type="button" onClick={() => setInput('Plan my unfinished tasks into free time this week.')}>Plan my week</button>
         <button type="button" onClick={() => setInput('Create a reminder tomorrow at 9 AM to call family.')}>Create reminder</button>
       </div>}
-      <form onSubmit={submit}><input value={input} onChange={(event) => setInput(event.target.value)} placeholder={language === 'ne' ? 'Wildsaura लाई आदेश दिनुहोस्…' : 'Command Wildsaura…'} maxLength={2_000} /><button type="submit" aria-label="Send" disabled={loading || !input.trim()}>{loading ? '…' : '↑'}</button></form>
+      <form onSubmit={submit}><input value={input} onChange={(event) => setInput(event.target.value)} placeholder={language === 'ne' ? 'सहायकलाई सोध्नुहोस्…' : 'Ask your assistant…'} maxLength={2_000} /><button type="submit" aria-label="Send" disabled={loading || !input.trim()}>{loading ? '…' : '↑'}</button></form>
       <button className="assistant-planner-link" type="button" onClick={() => { setOpen(false); onOpenPlanner(); }}>Open full AI Planner →</button>
     </section> : null}
-    <button className="assistant-button" type="button" onClick={() => setOpen((current) => !current)} aria-label={open ? 'Close AI assistant' : 'Open AI assistant'} aria-expanded={open}>{open ? '×' : '✦'}</button>
+    <button className="assistant-button" type="button" onClick={() => setOpen((current) => !current)} aria-label={open ? 'Close Aayoj Assistant' : 'Open Aayoj Assistant'} aria-expanded={open}>{open ? '×' : <BrandMark />}</button>
   </div>;
 }

@@ -1,5 +1,16 @@
-const CACHE_NAME = 'wildsaura-shell-v2';
-const SHELL = ['/', '/index.html', '/manifest.json', '/icons/wildsaura-icon.svg'];
+const CACHE_NAME = 'aayoj-shell-v3';
+const SHELL = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/favicon.ico',
+  '/icons/aayoj-icon.png',
+  '/icons/aayoj-icon-192.png',
+  '/icons/aayoj-icon-512.png',
+  '/icons/aayoj-icon-maskable-192.png',
+  '/icons/aayoj-icon-maskable-512.png',
+  '/icons/aayoj-apple-touch-icon.png',
+];
 const CACHEABLE_DESTINATIONS = new Set(['font', 'image', 'script', 'style']);
 const PRIVATE_PATH_PREFIXES = ['/api/', '/auth/', '/oauth/'];
 

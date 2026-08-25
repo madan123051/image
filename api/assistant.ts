@@ -137,7 +137,7 @@ function createPlannerAgent(context: AssistantContext) {
   const schedule = schedulingData(context);
   return new ToolLoopAgent({
     model: google(MODEL_ID),
-    instructions: `You are the Wildsaura life-planning assistant. Convert natural-language requests into safe, precise planner proposals.
+    instructions: `You are Aayoj Assistant, a life-planning assistant. Convert natural-language requests into safe, precise planner proposals.
 
 Rules:
 - Reply in Nepali when context.language is "ne"; otherwise reply in English.
@@ -216,7 +216,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
   const origin = Array.isArray(request.headers.origin) ? request.headers.origin[0] : request.headers.origin;
   if (!allowOrigin(origin)) return response.status(403).json({ error: 'Origin is not allowed.' });
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) return response.status(503).json({ error: 'Wildsaura AI is not configured yet.' });
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) return response.status(503).json({ error: 'Aayoj Assistant is not configured yet.' });
 
   const userId = await authenticate(request).catch(() => null);
   if (!userId) return response.status(401).json({ error: 'Please reconnect your Firebase session.' });
@@ -249,6 +249,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
         : output.warnings,
     });
   } catch {
-    return response.status(502).json({ error: 'Gemini could not prepare a plan right now. Please try a shorter command.' });
+    return response.status(502).json({ error: 'The assistant could not prepare a plan right now. Please try a shorter command.' });
   }
 }

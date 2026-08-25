@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-Wildsaura is a Create React App/TypeScript planner deployed on Vercel. Firebase
+Aayoj is a Create React App/TypeScript planner designed by Wildsaura and deployed on Vercel. Firebase
 Anonymous Authentication supplies a stable browser-local user ID, and Cloud
 Firestore stores all planner data beneath `users/{uid}`. Real-time listeners
 hydrate the shared planner store and expose cached/pending-write state to the UI.
@@ -19,7 +19,7 @@ or otherwise applying data changes requires explicit user action.
 
 ## Phase 1 — complete
 
-1. Responsive Wildsaura shell with desktop sidebar, mobile navigation, search,
+1. Responsive Aayoj shell with desktop sidebar, mobile navigation, search,
    theme control and English/नेपाली language switching.
 2. Gregorian (AD) and Bikram Sambat (BS) calendar day, week, month and agenda
    views with event create/edit/duplicate/complete/delete flows.
