@@ -4,6 +4,7 @@ import { AppShell } from './components/AppShell';
 import { AccountDialog } from './components/AccountDialog';
 import { AIAssistant } from './components/AIAssistant';
 import { CalendarDialog } from './components/CalendarDialog';
+import { CalendarAIQuickAdd } from './components/CalendarAIQuickAdd';
 import { EventDialog } from './components/EventDialog';
 import { QuickAddDialog } from './components/QuickAddDialog';
 import { ReminderDialog } from './components/ReminderDialog';
@@ -42,6 +43,8 @@ function App() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [eventDate, setEventDate] = useState(toDateKey(new Date()));
+  const [calendarAIOpen, setCalendarAIOpen] = useState(false);
+  const [calendarAIDate, setCalendarAIDate] = useState(toDateKey(new Date()));
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -133,6 +136,11 @@ function App() {
   const editEvent = (eventId: string) => {
     setSelectedEventId(eventId);
     setEventDialogOpen(true);
+  };
+
+  const planCalendarDate = (dateKey: string) => {
+    setCalendarAIDate(dateKey);
+    setCalendarAIOpen(true);
   };
 
   const newTask = () => {
@@ -227,7 +235,7 @@ function App() {
 
   const page = (() => {
     if (section === 'today') return <TodayPage data={store.data} userId={store.userId} language={store.language} labels={labels} onOpenCalendar={() => navigate('calendar')} onOpenTasks={() => navigate('tasks')} onEditEvent={editEvent} onToggleTask={store.toggleTask} />;
-    if (section === 'calendar') return <CalendarPage events={events} tasks={tasks} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onNewEvent={newEvent} onEditEvent={editEvent} onEditTask={editTask} onSaveEvent={store.saveEvent} onAddCalendar={() => newCalendar(false)} />;
+    if (section === 'calendar') return <CalendarPage events={events} tasks={tasks} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onPlanDate={planCalendarDate} onEditEvent={editEvent} onEditTask={editTask} onSaveEvent={store.saveEvent} onAddCalendar={() => newCalendar(false)} />;
     if (section === 'tasks') return <TasksPage tasks={tasks} events={events} routines={routines} preferences={preferences} labels={labels} onNewTask={newTask} onEditTask={editTask} onToggleTask={store.toggleTask} onSaveTask={store.saveTask} />;
     if (section === 'planner') return <PlannerPage data={store.data} userId={store.userId} labels={labels} onApply={applyAIChanges} />;
     if (section === 'reminders') return <RemindersPage reminders={reminders} routines={routines} labels={labels} onAddReminder={newReminder} onEditReminder={editReminder} onCompleteReminder={store.completeReminder} onSnoozeReminder={store.snoozeReminder} onAddRoutine={newRoutine} onEditRoutine={editRoutine} onToggleRoutine={store.toggleRoutine} />;
@@ -242,6 +250,7 @@ function App() {
       <SearchResults query={searchQuery} results={results} onSelect={selectSearchResult} onClose={() => setSearchQuery('')} />
     </AppShell>
     <EventDialog open={eventDialogOpen} event={selectedEvent} defaultDate={eventDate} userId={store.userId} timezone={preferences.timezone} calendars={calendars} events={events} language={store.language} labels={labels} onClose={() => setEventDialogOpen(false)} onSave={store.saveEvent} onDelete={store.deleteEvent} />
+    <CalendarAIQuickAdd open={calendarAIOpen} dateKey={calendarAIDate} data={store.data} userId={store.userId} language={store.language} onClose={() => setCalendarAIOpen(false)} onApply={applyAIChanges} />
     <TaskDialog open={taskDialogOpen} task={selectedTask} userId={store.userId} labels={labels} onClose={() => setTaskDialogOpen(false)} onSave={store.saveTask} />
     <QuickAddDialog open={quickAddOpen} userId={store.userId} labels={labels} events={events} tasks={tasks} routines={routines} preferences={preferences} calendars={calendars} onClose={() => setQuickAddOpen(false)} onOpenEvent={() => newEvent()} onOpenTask={newTask} onOpenReminders={newReminder} onOpenRoutines={newRoutine} onSaveEvent={store.saveEvent} />
     <ReminderDialog open={reminderDialogOpen} reminder={selectedReminder} userId={store.userId} timezone={preferences.timezone} onClose={() => setReminderDialogOpen(false)} onSave={store.saveReminder} onDelete={store.deleteReminder} />

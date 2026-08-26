@@ -26,13 +26,17 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead, o
 
   return <div className="notification-center">
     <button
-      className="icon-button notification-button"
+      className={`icon-button notification-button ${open ? 'active' : ''}`}
       type="button"
       aria-label={`Notifications${unread ? ` (${unread} unread)` : ''}`}
       aria-expanded={open}
       onClick={() => setOpen((current) => !current)}
     >
-      ♧{unread > 0 && <span className="notification-badge">{unread > 9 ? '9+' : unread}</span>}
+      <svg className="notification-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" />
+        <path d="M10 21h4" />
+      </svg>
+      {unread > 0 && <span className="notification-badge">{unread > 9 ? '9+' : unread}</span>}
     </button>
     {open && <section className="notification-popover" aria-label="Notification center">
       <header><span><strong>Notifications</strong><small>Saved and synced across this workspace</small></span>{unread > 0 && <button type="button" onClick={onMarkAllRead}>Mark all read</button>}</header>

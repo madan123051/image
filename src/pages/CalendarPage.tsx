@@ -21,7 +21,7 @@ interface CalendarPageProps {
   labels: Record<CopyKey, string>;
   anchor: Date;
   onAnchorChange(date: Date): void;
-  onNewEvent(dateKey: string): void;
+  onPlanDate(dateKey: string): void;
   onEditEvent(eventId: string): void;
   onEditTask(taskId: string): void;
   onSaveEvent(event: CalendarEvent): void;
@@ -30,6 +30,7 @@ interface CalendarPageProps {
 
 const englishWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const nepaliWeekdays = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिहि', 'शुक्र', 'शनि'];
+const englishMonths = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2026, month, 1)));
 
 const activityEmojiRules: Array<[RegExp, string]> = [
   [/(photo|camera|shoot|portrait|wedding)/i, '📸'],
@@ -121,13 +122,16 @@ export function CalendarPage({
   labels,
   anchor,
   onAnchorChange,
-  onNewEvent,
+  onPlanDate,
   onEditEvent,
   onEditTask,
   onSaveEvent,
   onAddCalendar,
 }: CalendarPageProps) {
   const [view, setView] = useState<CalendarView>('month');
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState(anchor.getFullYear());
+  const [pickerError, setPickerError] = useState('');
   const [visibleCalendarIds, setVisibleCalendarIds] = useState(() => calendars.filter((calendar) => calendar.visible).map((calendar) => calendar.id));
   const todayKey = toDateKey(new Date());
   const visibleEvents = useMemo(() => {
@@ -170,9 +174,37 @@ export function CalendarPage({
     }));
   }, [anchor, language, preferences.firstDayOfWeek]);
 
+  const anchorNepali = getNepaliDate(anchor);
+  const activeCalendarYear = language === 'ne' ? anchorNepali.year : anchor.getFullYear();
+  const activeCalendarMonth = language === 'ne' ? anchorNepali.month : anchor.getMonth() + 1;
   const title = language === 'ne'
-    ? `${NEPALI_MONTHS[getNepaliDate(anchor).month - 1]} ${toNepaliNumerals(getNepaliDate(anchor).year)}`
+    ? `${NEPALI_MONTHS[activeCalendarMonth - 1]} ${toNepaliNumerals(activeCalendarYear)}`
     : new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(anchor);
+
+  const toggleMonthPicker = () => {
+    if (monthPickerOpen) {
+      setMonthPickerOpen(false);
+      return;
+    }
+    setPickerYear(activeCalendarYear);
+    setPickerError('');
+    setMonthPickerOpen(true);
+  };
+
+  const chooseMonth = (month: number) => {
+    try {
+      if (language === 'ne') {
+        const gregorian = getGregorianDateForNepaliDay(pickerYear, month, 1);
+        onAnchorChange(new Date(gregorian.year, gregorian.month - 1, gregorian.day));
+      } else {
+        if (pickerYear < 1900 || pickerYear > 2200) throw new Error('Unsupported year');
+        onAnchorChange(new Date(pickerYear, month - 1, 1));
+      }
+      setMonthPickerOpen(false);
+    } catch {
+      setPickerError(language === 'ne' ? 'यो वर्ष समर्थित छैन।' : 'Choose a year between 1900 and 2200.');
+    }
+  };
 
   const move = (direction: number) => {
     if (view === 'month') {
@@ -207,7 +239,7 @@ export function CalendarPage({
   return (
     <div className="page calendar-page">
       <header className="page-heading compact-heading">
-        <div><p className="eyebrow">Plan with clarity</p><h1>{labels.calendar}</h1><p>Drag an event to another day. Click any date to add a new one.</p></div>
+        <div><p className="eyebrow">Plan with clarity</p><h1>{labels.calendar}</h1><p>Drag to reschedule. Tap any date and let AI plan it for you.</p></div>
         <WeatherChip language={language} />
       </header>
 
@@ -217,7 +249,21 @@ export function CalendarPage({
             <button className="icon-button" type="button" onClick={() => move(-1)} aria-label="Previous period">‹</button>
             <button className="secondary-button today-button" type="button" onClick={() => onAnchorChange(new Date())}>{labels.today}</button>
             <button className="icon-button" type="button" onClick={() => move(1)} aria-label="Next period">›</button>
-            <h2>{title}</h2>
+            {monthPickerOpen ? <button className="month-picker-scrim" type="button" onClick={() => setMonthPickerOpen(false)} aria-label="Close month picker" /> : null}
+            <div className={`month-picker-anchor ${monthPickerOpen ? 'open' : ''}`}>
+              <button className="month-title-button" type="button" onClick={toggleMonthPicker} aria-haspopup="dialog" aria-expanded={monthPickerOpen}>{title}<span aria-hidden="true">⌄</span></button>
+              {monthPickerOpen ? <section className="month-picker-popover" role="dialog" aria-label="Choose month and year">
+                <header>
+                  <button type="button" onClick={() => setPickerYear((year) => year - 1)} aria-label="Previous year">‹</button>
+                  <input type="number" inputMode="numeric" value={pickerYear} min={language === 'ne' ? 1970 : 1900} max={2200} onChange={(event) => { setPickerYear(Number(event.target.value)); setPickerError(''); }} aria-label="Calendar year" />
+                  <button type="button" onClick={() => setPickerYear((year) => year + 1)} aria-label="Next year">›</button>
+                </header>
+                <div className="month-picker-grid">
+                  {(language === 'ne' ? NEPALI_MONTHS : englishMonths).map((monthName, index) => <button className={pickerYear === activeCalendarYear && index + 1 === activeCalendarMonth ? 'active' : ''} type="button" key={monthName} onClick={() => chooseMonth(index + 1)}>{monthName}</button>)}
+                </div>
+                {pickerError ? <small role="alert">{pickerError}</small> : null}
+              </section> : null}
+            </div>
           </div>
           <div className="segmented-control" aria-label="Calendar view">
             {(['day', 'week', 'month', 'agenda'] as CalendarView[]).map((item) => (
@@ -267,11 +313,11 @@ export function CalendarPage({
                       key={cell.date.toISOString()}
                       role="button"
                       tabIndex={0}
-                      onClick={() => onNewEvent(dateKey)}
+                      onClick={() => onPlanDate(dateKey)}
                       onKeyDown={(keyEvent) => {
                         if (keyEvent.target !== keyEvent.currentTarget || !['Enter', ' '].includes(keyEvent.key)) return;
                         keyEvent.preventDefault();
-                        onNewEvent(dateKey);
+                        onPlanDate(dateKey);
                       }}
                       onDragOver={(dragEvent) => dragEvent.preventDefault()}
                       onDrop={(dropEvent) => handleDrop(dropEvent, cell.date)}
@@ -301,7 +347,7 @@ export function CalendarPage({
                 {Array.from({ length: 14 }, (_, index) => index + 7).map((hour) => (
                   <div className="time-row" key={hour}><time>{`${hour}`.padStart(2, '0')}:00</time>{activeDays.map((date) => {
                     const hourEvents = (eventsByDay.get(toDateKey(date)) ?? []).filter((event) => new Date(event.startDateTime).getHours() === hour);
-                    return <div className="time-cell" key={date.toISOString()} onClick={() => onNewEvent(toDateKey(date))} onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, date)}>{hourEvents.map((event) => <CalendarEventChip event={event} language={language} key={event.id} onOpen={() => onEditEvent(event.id)} />)}</div>;
+                    return <div className="time-cell" key={date.toISOString()} onClick={() => onPlanDate(toDateKey(date))} onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, date)}>{hourEvents.map((event) => <CalendarEventChip event={event} language={language} key={event.id} onOpen={() => onEditEvent(event.id)} />)}</div>;
                   })}</div>
                 ))}
               </div>
