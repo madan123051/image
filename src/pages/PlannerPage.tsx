@@ -54,16 +54,18 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
   };
 
   return <div className="page planner-page">
-    <header className="page-heading compact-heading">
+    <header className="page-heading compact-heading planner-heading">
       <div><p className="eyebrow">Aayoj Assistant</p><h1>{labels.aiPlanner}</h1><p>{labels.plannerPrompt}</p></div>
       <span className="provider-chip assistant-provider"><BrandMark /> Secure planning assistant</span>
     </header>
     <div className="planner-layout">
       <section className="content-panel planner-prompt-panel">
-        <span className="planner-orbit">✦</span>
-        <h2>What should your assistant arrange?</h2>
-        <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={5} maxLength={2_000} placeholder="Plan, create, update, move, or remove…" />
-        <div className="prompt-ideas">{promptIdeas.map((idea) => <button type="button" key={idea} onClick={() => setPrompt(idea)}>{idea}</button>)}</div>
+        <header className="planner-prompt-title">
+          <span className="planner-orbit">✦</span>
+          <div><small>Tell Aayoj in one sentence</small><h2>What are we planning?</h2></div>
+        </header>
+        <textarea aria-label="Planning request" value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={3} maxLength={2_000} placeholder="Plan, create, update, move, or remove…" />
+        <div className="prompt-ideas" aria-label="Quick planning prompts">{promptIdeas.map((idea) => <button type="button" key={idea} onClick={() => setPrompt(idea)}>{idea}</button>)}</div>
         <button className="primary-button wide-button" type="button" onClick={generate} disabled={loading || !prompt.trim()}>{loading ? 'Assistant is checking your schedule…' : '✦ Generate safe proposal'}</button>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
         <div className="planner-context">
@@ -73,7 +75,7 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
         </div>
       </section>
 
-      <section className="content-panel proposal-panel">
+      <section className={`content-panel proposal-panel ${proposal ? 'has-proposal' : 'is-empty'}`}>
         <header className="section-heading"><div><p className="eyebrow">Approval preview</p><h2>{proposal ? proposal.summary : 'Waiting for your command'}</h2></div>{proposal ? <span className="status-pill preview">preview</span> : null}</header>
         {!proposal ? <div className="empty-state planner-empty"><span>✦</span><p>Your assistant will return a typed proposal. Nothing changes until you press Apply.</p></div> : <>
           <p className="proposal-summary">{proposal.reply}</p>

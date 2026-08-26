@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import type { AppData, Language } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { calculateFreeMinutes, formatDuration, isSameDay, minutesBetween, toDateKey } from '../utils/date';
 import { getNepaliDate, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
 import { getEventCalendarDayCountdown } from '../services/countdownService';
+import { TodayLiveHero } from '../components/TodayLiveHero';
 
 interface TodayPageProps {
   data: AppData;
@@ -32,7 +34,12 @@ export function TodayPage({
   onEditEvent,
   onToggleTask,
 }: TodayPageProps) {
-  const now = new Date();
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const user = data.users.find((item) => item.id === userId);
   const preferences = data.preferences.find((item) => item.userId === userId);
   if (!user || !preferences) return null;
@@ -51,6 +58,11 @@ export function TodayPage({
     .filter((event) => event.userId === userId && event.countdown && new Date(event.startDateTime) >= now)
     .sort((a, b) => a.startDateTime.localeCompare(b.startDateTime));
   const nextEvent = events.find((event) => new Date(event.endDateTime) >= now) ?? events[events.length - 1];
+  const focusTask = [...tasks].sort((left, right) => {
+    const priority = { urgent: 4, high: 3, medium: 2, low: 1 };
+    return priority[right.priority] - priority[left.priority];
+  })[0];
+  const suggestedFocusMinutes = Math.min(90, Math.max(30, focusTask?.estimatedMinutes ?? preferences.defaultTaskMinutes));
   const timelineItems = [
     ...events.map((event) => ({
       id: event.id,
@@ -84,26 +96,21 @@ export function TodayPage({
   const displayedDate = language === 'ne'
     ? `${toNepaliNumerals(nepali.year)} ${NEPALI_MONTHS[nepali.month - 1]} ${toNepaliNumerals(nepali.day)}, ${new Intl.DateTimeFormat('ne-NP', { weekday: 'long' }).format(now)}`
     : englishDate;
-  const plannerTime = new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', {
-    timeZone: preferences.timezone,
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(now);
-  const timezoneLabel = preferences.timezone.split('/').pop()?.replace(/_/g, ' ') ?? preferences.timezone;
-
   return (
     <div className="page today-page">
-      <header className="page-heading today-heading">
-        <div>
-          <p className="eyebrow">{labels.today} · {displayedDate}</p>
-          <h1>{labels.greeting}, {user.displayName}.</h1>
-          <p>{labels.focus}</p>
-        </div>
-        <div className="weather-chip" title={`Planner time zone: ${preferences.timezone}`}>
-          <span aria-hidden="true">◷</span>
-          <span><strong>{plannerTime}</strong><small>{timezoneLabel} · planner time</small></span>
-        </div>
-      </header>
+      <TodayLiveHero
+        displayName={user.displayName}
+        displayedDate={displayedDate}
+        events={events}
+        focusLabel={labels.focus}
+        freeMinutes={freeMinutes}
+        greetingLabel={labels.greeting}
+        language={language}
+        now={now}
+        plannerTimezone={preferences.timezone}
+        tasks={tasks}
+        todayLabel={labels.today}
+      />
 
       <section className="summary-strip" aria-label="Today summary">
         <button type="button" onClick={onOpenCalendar}>
@@ -163,8 +170,10 @@ export function TodayPage({
           <section className="content-panel focus-panel">
             <span className="panel-icon">✦</span>
             <p className="eyebrow">Aayoj suggestion</p>
-            <h3>Protect a 45-minute focus block</h3>
-            <p>You have an open window after lunch. Preview it in the AI Planner before adding it.</p>
+            <h3>{focusTask ? `Protect ${suggestedFocusMinutes} minutes for ${focusTask.title}` : 'Keep one clear focus block'}</h3>
+            <p>{freeMinutes >= suggestedFocusMinutes
+              ? `${formatDuration(freeMinutes)} is still open today. Let Aayoj place this into a conflict-free window.`
+              : 'Today is already tight. Ask Aayoj to move something flexible before adding more.'}</p>
             <button className="secondary-button" type="button" onClick={() => onOpenTasks()}>Review tasks</button>
           </section>
         </aside>
