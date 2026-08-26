@@ -101,8 +101,8 @@ export function AppShell({
             <kbd>⌘ K</kbd>
           </label>
           <div className="top-actions">
-            <button className="language-button" type="button" onClick={onToggleLanguage}>
-              {language === 'en' ? 'EN · AD' : 'ने · बि.सं.'}
+            <button className="language-button" type="button" onClick={onToggleLanguage} aria-label={language === 'en' ? 'Switch to Nepali Bikram Sambat' : 'Switch to English Gregorian'}>
+              <span>{language === 'en' ? 'EN' : 'ने'}</span><small>{language === 'en' ? 'AD' : 'बि.सं.'}</small>
             </button>
             <NotificationCenter notifications={notifications} onMarkRead={onMarkNotificationRead} onMarkAllRead={onMarkAllNotificationsRead} onOpen={onOpenNotification} />
             <button className="profile-button" type="button" onClick={onOpenAccount} aria-label={`Open ${userName} profile`}>

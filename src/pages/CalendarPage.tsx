@@ -3,6 +3,7 @@ import type { CalendarDefinition, CalendarEvent, CalendarView, Language, Planner
 import type { CopyKey } from '../i18n';
 import { addDays, getMonthGrid, getWeekDays, isSameDay, localDateTime, minutesBetween, toDateKey } from '../utils/date';
 import { getGregorianDateForNepaliDay, getNepaliDate, getNepaliMonthDetails, moveNepaliMonth, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
+import { WeatherChip } from '../components/WeatherChip';
 
 interface CalendarCell {
   date: Date;
@@ -207,7 +208,7 @@ export function CalendarPage({
     <div className="page calendar-page">
       <header className="page-heading compact-heading">
         <div><p className="eyebrow">Plan with clarity</p><h1>{labels.calendar}</h1><p>Drag an event to another day. Click any date to add a new one.</p></div>
-        <button className="primary-button" type="button" onClick={() => onNewEvent(toDateKey(anchor))}>＋ {labels.newEvent}</button>
+        <WeatherChip language={language} />
       </header>
 
       <section className="calendar-workspace">
