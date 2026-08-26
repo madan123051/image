@@ -1,5 +1,5 @@
 import { useMemo, useState, type DragEvent } from 'react';
-import type { CalendarDefinition, CalendarEvent, CalendarView, Language, UserPreferences } from '../types/domain';
+import type { CalendarDefinition, CalendarEvent, CalendarView, Language, PlannerTask, UserPreferences } from '../types/domain';
 import type { CopyKey } from '../i18n';
 import { addDays, getMonthGrid, getWeekDays, isSameDay, localDateTime, minutesBetween, toDateKey } from '../utils/date';
 import { getGregorianDateForNepaliDay, getNepaliDate, getNepaliMonthDetails, moveNepaliMonth, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
@@ -13,6 +13,7 @@ interface CalendarCell {
 
 interface CalendarPageProps {
   events: CalendarEvent[];
+  tasks: PlannerTask[];
   calendars: CalendarDefinition[];
   preferences: UserPreferences;
   language: Language;
@@ -21,12 +22,38 @@ interface CalendarPageProps {
   onAnchorChange(date: Date): void;
   onNewEvent(dateKey: string): void;
   onEditEvent(eventId: string): void;
+  onEditTask(taskId: string): void;
   onSaveEvent(event: CalendarEvent): void;
   onAddCalendar(): void;
 }
 
 const englishWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const nepaliWeekdays = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिहि', 'शुक्र', 'शनि'];
+
+const activityEmojiRules: Array<[RegExp, string]> = [
+  [/(photo|camera|shoot|portrait|wedding)/i, '📸'],
+  [/(video|film|reel|\bedit(ing)?\b|youtube|content)/i, '🎬'],
+  [/(meeting|client|interview|appointment)/i, '🤝'],
+  [/(call|phone|zoom)/i, '📞'],
+  [/(travel|flight|airport|trip|vacation)/i, '✈️'],
+  [/(\bgym\b|workout|fitness|exercise|\brun(ning)?\b|yoga)/i, '🏃'],
+  [/(birthday|anniversary|celebration|party)/i, '🎂'],
+  [/(doctor|hospital|health|medical|dentist)/i, '🩺'],
+  [/(study|read|course|class|learn|exam)/i, '📚'],
+  [/(shopping|grocery|market|buy)/i, '🛍️'],
+  [/(breakfast|lunch|dinner|food|restaurant)/i, '🍽️'],
+  [/(invoice|payment|bill|bank|finance)/i, '💳'],
+  [/(family|home|house)/i, '🏡'],
+  [/(work|project|focus|office|code|design)/i, '💻'],
+];
+
+function activityEmoji(text: string, fallback: string): string {
+  return activityEmojiRules.find(([pattern]) => pattern.test(text))?.[1] ?? fallback;
+}
+
+function CalendarActivityBadge({ emoji, title, kind, onOpen }: { emoji: string; title: string; kind: 'event' | 'task'; onOpen(): void }) {
+  return <button className={`activity-emoji ${kind}`} type="button" title={title} aria-label={`Open ${kind}: ${title}`} onClick={(event) => { event.stopPropagation(); onOpen(); }}>{emoji}</button>;
+}
 
 function buildNepaliGrid(anchor: Date, firstDayOfWeek: number): CalendarCell[] {
   const anchorNepali = getNepaliDate(anchor);
@@ -82,6 +109,7 @@ function CalendarEventChip({ event, language, onOpen }: { event: CalendarEvent; 
 
 export function CalendarPage({
   events,
+  tasks,
   calendars,
   preferences,
   language,
@@ -90,13 +118,42 @@ export function CalendarPage({
   onAnchorChange,
   onNewEvent,
   onEditEvent,
+  onEditTask,
   onSaveEvent,
   onAddCalendar,
 }: CalendarPageProps) {
   const [view, setView] = useState<CalendarView>('month');
   const [visibleCalendarIds, setVisibleCalendarIds] = useState(() => calendars.filter((calendar) => calendar.visible).map((calendar) => calendar.id));
-  const visibleEvents = events.filter((event) => visibleCalendarIds.includes(event.calendarId) && event.status !== 'cancelled');
+  const todayKey = toDateKey(new Date());
+  const visibleEvents = useMemo(() => {
+    const visibleIds = new Set(visibleCalendarIds);
+    return events.filter((event) => visibleIds.has(event.calendarId) && event.status !== 'cancelled');
+  }, [events, visibleCalendarIds]);
   const weekdays = language === 'ne' ? nepaliWeekdays : englishWeekdays;
+
+  const eventsByDay = useMemo(() => {
+    const grouped = new Map<string, CalendarEvent[]>();
+    visibleEvents.forEach((event) => {
+      const key = toDateKey(event.startDateTime);
+      const dayEvents = grouped.get(key);
+      if (dayEvents) dayEvents.push(event);
+      else grouped.set(key, [event]);
+    });
+    return grouped;
+  }, [visibleEvents]);
+
+  const tasksByDay = useMemo(() => {
+    const grouped = new Map<string, PlannerTask[]>();
+    tasks.forEach((task) => {
+      if (task.status === 'completed') return;
+      const key = task.scheduledStart ? toDateKey(task.scheduledStart) : task.dueDate;
+      if (!key) return;
+      const dayTasks = grouped.get(key);
+      if (dayTasks) dayTasks.push(task);
+      else grouped.set(key, [task]);
+    });
+    return grouped;
+  }, [tasks]);
 
   const monthCells = useMemo<CalendarCell[]>(() => {
     if (language === 'ne') return buildNepaliGrid(anchor, preferences.firstDayOfWeek);
@@ -188,19 +245,33 @@ export function CalendarPage({
               </div>
               <div className="month-grid">
                 {monthCells.map((cell) => {
-                  const dayEvents = visibleEvents.filter((event) => isSameDay(event.startDateTime, cell.date));
+                  const dateKey = toDateKey(cell.date);
+                  const dayEvents = eventsByDay.get(dateKey) ?? [];
+                  const dayTasks = tasksByDay.get(dateKey) ?? [];
+                  const activities = [
+                    ...dayTasks.map((task) => ({ id: task.id, emoji: activityEmoji(`${task.title} ${task.category} ${task.description}`, '✅'), title: task.title, kind: 'task' as const })),
+                    ...dayEvents.map((event) => ({ id: event.id, emoji: activityEmoji(`${event.title} ${event.description} ${event.location}`, '📅'), title: event.title, kind: 'event' as const })),
+                  ];
                   return (
                     <div
-                      className={`month-cell ${cell.outside ? 'outside' : ''} ${isSameDay(cell.date, new Date()) ? 'today' : ''}`}
+                      className={`month-cell ${cell.outside ? 'outside' : ''} ${dateKey === todayKey ? 'today' : ''}`}
                       key={cell.date.toISOString()}
                       role="button"
                       tabIndex={0}
-                      onClick={() => onNewEvent(toDateKey(cell.date))}
-                      onKeyDown={(keyEvent) => { if (keyEvent.key === 'Enter') onNewEvent(toDateKey(cell.date)); }}
+                      onClick={() => onNewEvent(dateKey)}
+                      onKeyDown={(keyEvent) => {
+                        if (keyEvent.target !== keyEvent.currentTarget || !['Enter', ' '].includes(keyEvent.key)) return;
+                        keyEvent.preventDefault();
+                        onNewEvent(dateKey);
+                      }}
                       onDragOver={(dragEvent) => dragEvent.preventDefault()}
                       onDrop={(dropEvent) => handleDrop(dropEvent, cell.date)}
                     >
                       <span className="date-number"><b>{cell.primaryDay}</b><small>{language === 'ne' ? `AD ${cell.secondaryDay}` : `BS ${toNepaliNumerals(cell.secondaryDay ?? '')}`}</small></span>
+                      {activities.length ? <div className="day-activity-emojis" role="group" aria-label={`${activities.length} scheduled activities`}>
+                        {activities.slice(0, 3).map((activity) => <CalendarActivityBadge key={`${activity.kind}-${activity.id}`} emoji={activity.emoji} title={activity.title} kind={activity.kind} onOpen={() => activity.kind === 'task' ? onEditTask(activity.id) : onEditEvent(activity.id)} />)}
+                        {activities.length > 3 ? <small className="activity-count">+{activities.length - 3}</small> : null}
+                      </div> : null}
                       <div className="cell-events">
                         {dayEvents.slice(0, 3).map((event) => <CalendarEventChip key={event.id} event={event} language={language} onOpen={() => onEditEvent(event.id)} />)}
                         {dayEvents.length > 3 && <small className="more-events">+{dayEvents.length - 3} more</small>}
@@ -220,7 +291,7 @@ export function CalendarPage({
               <div className="time-grid-scroll">
                 {Array.from({ length: 14 }, (_, index) => index + 7).map((hour) => (
                   <div className="time-row" key={hour}><time>{`${hour}`.padStart(2, '0')}:00</time>{activeDays.map((date) => {
-                    const hourEvents = visibleEvents.filter((event) => isSameDay(event.startDateTime, date) && new Date(event.startDateTime).getHours() === hour);
+                    const hourEvents = (eventsByDay.get(toDateKey(date)) ?? []).filter((event) => new Date(event.startDateTime).getHours() === hour);
                     return <div className="time-cell" key={date.toISOString()} onClick={() => onNewEvent(toDateKey(date))} onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, date)}>{hourEvents.map((event) => <CalendarEventChip event={event} language={language} key={event.id} onOpen={() => onEditEvent(event.id)} />)}</div>;
                   })}</div>
                 ))}

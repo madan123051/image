@@ -227,7 +227,7 @@ function App() {
 
   const page = (() => {
     if (section === 'today') return <TodayPage data={store.data} userId={store.userId} language={store.language} labels={labels} onOpenCalendar={() => navigate('calendar')} onOpenTasks={() => navigate('tasks')} onEditEvent={editEvent} onToggleTask={store.toggleTask} />;
-    if (section === 'calendar') return <CalendarPage events={events} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onNewEvent={newEvent} onEditEvent={editEvent} onSaveEvent={store.saveEvent} onAddCalendar={() => newCalendar(false)} />;
+    if (section === 'calendar') return <CalendarPage events={events} tasks={tasks} calendars={calendars} preferences={preferences} language={store.language} labels={labels} anchor={anchor} onAnchorChange={setAnchor} onNewEvent={newEvent} onEditEvent={editEvent} onEditTask={editTask} onSaveEvent={store.saveEvent} onAddCalendar={() => newCalendar(false)} />;
     if (section === 'tasks') return <TasksPage tasks={tasks} events={events} routines={routines} preferences={preferences} labels={labels} onNewTask={newTask} onEditTask={editTask} onToggleTask={store.toggleTask} onSaveTask={store.saveTask} />;
     if (section === 'planner') return <PlannerPage data={store.data} userId={store.userId} labels={labels} onApply={applyAIChanges} />;
     if (section === 'reminders') return <RemindersPage reminders={reminders} routines={routines} labels={labels} onAddReminder={newReminder} onEditReminder={editReminder} onCompleteReminder={store.completeReminder} onSnoozeReminder={store.snoozeReminder} onAddRoutine={newRoutine} onEditRoutine={editRoutine} onToggleRoutine={store.toggleRoutine} />;
