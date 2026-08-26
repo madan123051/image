@@ -4,6 +4,7 @@ import type { CopyKey } from '../i18n';
 import { addDays, getMonthGrid, getWeekDays, isSameDay, localDateTime, minutesBetween, toDateKey } from '../utils/date';
 import { getGregorianDateForNepaliDay, getNepaliDate, getNepaliMonthDetails, moveNepaliMonth, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
 import { WeatherChip } from '../components/WeatherChip';
+import { Modal } from '../components/Modal';
 
 interface CalendarCell {
   date: Date;
@@ -31,6 +32,16 @@ interface CalendarPageProps {
 const englishWeekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const nepaliWeekdays = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिहि', 'शुक्र', 'शनि'];
 const englishMonths = Array.from({ length: 12 }, (_, month) => new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2026, month, 1)));
+
+const leisureIdeas = [
+  { id: 'ludo', emoji: '🎲', en: 'Play Ludo', ne: 'लुडो खेल्नुहोस्', minutes: 45, color: '#d98429' },
+  { id: 'walk', emoji: '🚶', en: 'Take a walk', ne: 'हिँड्न जानुहोस्', minutes: 30, color: '#4d8b72' },
+  { id: 'read', emoji: '📖', en: 'Read something', ne: 'केही पढ्नुहोस्', minutes: 30, color: '#7770a8' },
+  { id: 'rest', emoji: '☕', en: 'Rest & recharge', ne: 'आराम गर्नुहोस्', minutes: 30, color: '#b96f5f' },
+  { id: 'movie', emoji: '🎬', en: 'Watch a movie', ne: 'चलचित्र हेर्नुहोस्', minutes: 120, color: '#467a96' },
+] as const;
+
+type LeisureIdea = (typeof leisureIdeas)[number];
 
 const activityEmojiRules: Array<[RegExp, string]> = [
   [/(photo|camera|shoot|portrait|wedding)/i, '📸'],
@@ -133,6 +144,11 @@ export function CalendarPage({
   const [pickerYear, setPickerYear] = useState(anchor.getFullYear());
   const [pickerError, setPickerError] = useState('');
   const [visibleCalendarIds, setVisibleCalendarIds] = useState(() => calendars.filter((calendar) => calendar.visible).map((calendar) => calendar.id));
+  const [leisureDate, setLeisureDate] = useState('');
+  const [leisureIdea, setLeisureIdea] = useState<LeisureIdea>(leisureIdeas[0]);
+  const [leisureTime, setLeisureTime] = useState('18:00');
+  const [leisureMinutes, setLeisureMinutes] = useState(45);
+  const [leisureSaved, setLeisureSaved] = useState('');
   const todayKey = toDateKey(new Date());
   const visibleEvents = useMemo(() => {
     const visibleIds = new Set(visibleCalendarIds);
@@ -227,6 +243,58 @@ export function CalendarPage({
     const time = source.allDay ? '00:00' : `${`${new Date(source.startDateTime).getHours()}`.padStart(2, '0')}:${`${new Date(source.startDateTime).getMinutes()}`.padStart(2, '0')}`;
     const start = localDateTime(toDateKey(date), time);
     onSaveEvent({ ...source, startDateTime: start, endDateTime: new Date(new Date(start).getTime() + duration * 60_000).toISOString(), updatedAt: new Date().toISOString() });
+  };
+
+  const openLeisure = (dateKey: string) => {
+    const now = new Date();
+    const selectedIsToday = dateKey === toDateKey(now);
+    const nextHour = Math.min(22, now.getHours() + 1);
+    setLeisureDate(dateKey);
+    setLeisureIdea(leisureIdeas[0]);
+    setLeisureMinutes(leisureIdeas[0].minutes);
+    setLeisureTime(selectedIsToday ? `${`${nextHour}`.padStart(2, '0')}:00` : '18:00');
+    setLeisureSaved('');
+  };
+
+  const chooseLeisure = (idea: LeisureIdea) => {
+    setLeisureIdea(idea);
+    setLeisureMinutes(idea.minutes);
+  };
+
+  const saveLeisureBlock = () => {
+    if (!leisureDate) return;
+    const calendar = calendars.find((item) => item.visible && item.isPrivate) ?? calendars.find((item) => item.visible) ?? calendars[0];
+    if (!calendar) return;
+    const startDateTime = localDateTime(leisureDate, leisureTime);
+    const endDateTime = new Date(new Date(startDateTime).getTime() + leisureMinutes * 60_000).toISOString();
+    const now = new Date().toISOString();
+    const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    onSaveEvent({
+      id: `leisure_${id}`,
+      userId: calendar.userId,
+      calendarId: calendar.id,
+      title: language === 'ne' ? leisureIdea.ne : leisureIdea.en,
+      description: language === 'ne' ? 'Aayoj खाली समय सुझाव' : 'Aayoj free-time idea',
+      startDateTime,
+      endDateTime,
+      timezone: preferences.timezone,
+      allDay: false,
+      location: '',
+      color: leisureIdea.color,
+      status: 'confirmed',
+      recurrenceRule: null,
+      reminders: [],
+      participants: [],
+      attachments: [],
+      notes: '',
+      url: '',
+      isImportant: false,
+      countdown: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+    setLeisureSaved(language === 'ne' ? 'खाली समय पात्रोमा सुरक्षित भयो।' : 'Free-time block saved to your calendar.');
+    window.setTimeout(() => setLeisureDate(''), 650);
   };
 
   const weekDays = getWeekDays(anchor, preferences.firstDayOfWeek);
@@ -326,7 +394,7 @@ export function CalendarPage({
                       {activities.length ? <div className="day-activity-emojis" role="group" aria-label={`${activities.length} scheduled activities`}>
                         {activities.slice(0, 3).map((activity) => <CalendarActivityBadge key={`${activity.kind}-${activity.id}`} emoji={activity.emoji} title={activity.title} kind={activity.kind} onOpen={() => activity.kind === 'task' ? onEditTask(activity.id) : onEditEvent(activity.id)} />)}
                         {activities.length > 3 ? <small className="activity-count">+{activities.length - 3}</small> : null}
-                      </div> : null}
+                      </div> : !cell.outside && dateKey >= todayKey ? <button className="free-time-trigger" type="button" onClick={(event) => { event.stopPropagation(); openLeisure(dateKey); }} aria-label={`${language === 'ne' ? 'खाली समय विकल्प' : 'Free-time ideas'} · ${dateKey}`}><span>🎲</span><small>{language === 'ne' ? 'खाली समय' : 'Free time'}</small></button> : null}
                       <div className="cell-events">
                         {dayEvents.slice(0, 3).map((event) => <CalendarEventChip key={event.id} event={event} language={language} onOpen={() => onEditEvent(event.id)} />)}
                         {dayEvents.length > 3 && <small className="more-events">+{dayEvents.length - 3} more</small>}
@@ -363,6 +431,20 @@ export function CalendarPage({
           </div>
         </div>
       </section>
+
+      <Modal open={Boolean(leisureDate)} title={language === 'ne' ? 'खाली समय मिलाउनुहोस्' : 'Plan some free time'} onClose={() => setLeisureDate('')} className="leisure-modal">
+        <div className="leisure-modal-body">
+          <header><span>🎲</span><div><p className="eyebrow">{language === 'ne' ? 'Aayoj सुझाव' : 'Aayoj ideas'}</p><h3>{leisureDate ? new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(`${leisureDate}T12:00:00`)) : ''}</h3></div></header>
+          <div className="leisure-ideas" role="list" aria-label={language === 'ne' ? 'खाली समयका सुझावहरू' : 'Free-time ideas'}>{leisureIdeas.map((idea) => <button className={leisureIdea.id === idea.id ? 'active' : ''} type="button" role="listitem" key={idea.id} onClick={() => chooseLeisure(idea)}><span>{idea.emoji}</span><strong>{language === 'ne' ? idea.ne : idea.en}</strong><small>{idea.minutes} min</small></button>)}</div>
+          <div className="leisure-schedule">
+            <label><span>{language === 'ne' ? 'सुरु समय' : 'Start time'}</span><input type="time" value={leisureTime} onChange={(event) => setLeisureTime(event.target.value)} /></label>
+            <label><span>{language === 'ne' ? 'अवधि' : 'Duration'}</span><select value={leisureMinutes} onChange={(event) => setLeisureMinutes(Number(event.target.value))}>{[15,30,45,60,90,120].map((minutes) => <option value={minutes} key={minutes}>{minutes} min</option>)}</select></label>
+          </div>
+          {leisureSaved ? <p className="success-note" role="status">✓ {leisureSaved}</p> : null}
+          <button className="primary-button wide-button" type="button" onClick={saveLeisureBlock}>{language === 'ne' ? `${leisureIdea.emoji} पात्रोमा राख्नुहोस्` : `${leisureIdea.emoji} Add to calendar`}</button>
+          <button className="text-button" type="button" onClick={() => { const date = leisureDate; setLeisureDate(''); if (date) onPlanDate(date); }}>{language === 'ne' ? 'यसको सट्टा AI बाट दिन योजना बनाउनुहोस्' : 'Plan the whole day with AI instead'}</button>
+        </div>
+      </Modal>
     </div>
   );
 }
