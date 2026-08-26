@@ -51,6 +51,10 @@ function activityEmoji(text: string, fallback: string): string {
   return activityEmojiRules.find(([pattern]) => pattern.test(text))?.[1] ?? fallback;
 }
 
+function isCalendarWeekend(dayIndex: number, language: Language): boolean {
+  return dayIndex === 6 || (language === 'en' && dayIndex === 0);
+}
+
 function CalendarActivityBadge({ emoji, title, kind, onOpen }: { emoji: string; title: string; kind: 'event' | 'task'; onOpen(): void }) {
   return <button className={`activity-emoji ${kind}`} type="button" title={title} aria-label={`Open ${kind}: ${title}`} onClick={(event) => { event.stopPropagation(); onOpen(); }}>{emoji}</button>;
 }
@@ -102,7 +106,7 @@ function CalendarEventChip({ event, language, onOpen }: { event: CalendarEvent; 
       onDragStart={(dragEvent) => { dragEvent.stopPropagation(); dragEvent.dataTransfer.setData('text/event-id', event.id); }}
       title={`${time} · ${event.title}`}
     >
-      <i /> <span>{event.title}</span><small>{time}</small>
+      <span>{event.title}</span><small>{time}</small>
     </button>
   );
 }
@@ -241,20 +245,24 @@ export function CalendarPage({
           <div className="calendar-canvas">
             {view === 'month' && <div className="month-view">
               <div className="weekday-row">
-                {Array.from({ length: 7 }, (_, index) => weekdays[(index + preferences.firstDayOfWeek) % 7]).map((day) => <strong key={day}>{day}</strong>)}
+                {Array.from({ length: 7 }, (_, index) => {
+                  const dayIndex = (index + preferences.firstDayOfWeek) % 7;
+                  return <strong className={isCalendarWeekend(dayIndex, language) ? 'weekend' : ''} key={dayIndex}>{weekdays[dayIndex]}</strong>;
+                })}
               </div>
               <div className="month-grid">
                 {monthCells.map((cell) => {
                   const dateKey = toDateKey(cell.date);
                   const dayEvents = eventsByDay.get(dateKey) ?? [];
                   const dayTasks = tasksByDay.get(dateKey) ?? [];
+                  const weekend = isCalendarWeekend(cell.date.getDay(), language);
                   const activities = [
                     ...dayTasks.map((task) => ({ id: task.id, emoji: activityEmoji(`${task.title} ${task.category} ${task.description}`, '✅'), title: task.title, kind: 'task' as const })),
                     ...dayEvents.map((event) => ({ id: event.id, emoji: activityEmoji(`${event.title} ${event.description} ${event.location}`, '📅'), title: event.title, kind: 'event' as const })),
                   ];
                   return (
                     <div
-                      className={`month-cell ${cell.outside ? 'outside' : ''} ${dateKey === todayKey ? 'today' : ''}`}
+                      className={`month-cell ${cell.outside ? 'outside' : ''} ${weekend ? 'weekend' : ''} ${dateKey === todayKey ? 'today' : ''}`}
                       key={cell.date.toISOString()}
                       role="button"
                       tabIndex={0}
@@ -284,7 +292,7 @@ export function CalendarPage({
 
             {(view === 'week' || view === 'day') && <div className={`time-grid ${view}-view`}>
               <div className="time-grid-header"><span />{activeDays.map((date) => (
-                <button type="button" className={isSameDay(date, new Date()) ? 'active' : ''} key={date.toISOString()} onClick={() => { onAnchorChange(date); setView('day'); }}>
+                <button type="button" className={`${isSameDay(date, new Date()) ? 'active' : ''} ${isCalendarWeekend(date.getDay(), language) ? 'weekend' : ''}`} key={date.toISOString()} onClick={() => { onAnchorChange(date); setView('day'); }}>
                   <small>{weekdays[date.getDay()]}</small><strong>{language === 'ne' ? toNepaliNumerals(getNepaliDate(date).day) : date.getDate()}</strong>
                 </button>
               ))}</div>
