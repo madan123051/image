@@ -5,6 +5,7 @@ import { addDays, getMonthGrid, getWeekDays, isSameDay, localDateTime, minutesBe
 import { getGregorianDateForNepaliDay, getNepaliDate, getNepaliMonthDetails, moveNepaliMonth, NEPALI_MONTHS, toNepaliNumerals } from '../nepaliCalendar';
 import { WeatherChip } from '../components/WeatherChip';
 import { Modal } from '../components/Modal';
+import { OfflineLudo } from '../components/OfflineLudo';
 
 interface CalendarCell {
   date: Date;
@@ -149,6 +150,8 @@ export function CalendarPage({
   const [leisureTime, setLeisureTime] = useState('18:00');
   const [leisureMinutes, setLeisureMinutes] = useState(45);
   const [leisureSaved, setLeisureSaved] = useState('');
+  const [ludoOpen, setLudoOpen] = useState(false);
+  const [ludoDate, setLudoDate] = useState('');
   const todayKey = toDateKey(new Date());
   const visibleEvents = useMemo(() => {
     const visibleIds = new Set(visibleCalendarIds);
@@ -259,6 +262,12 @@ export function CalendarPage({
   const chooseLeisure = (idea: LeisureIdea) => {
     setLeisureIdea(idea);
     setLeisureMinutes(idea.minutes);
+  };
+
+  const startLudo = () => {
+    setLudoDate(leisureDate);
+    setLeisureDate('');
+    setLudoOpen(true);
   };
 
   const saveLeisureBlock = () => {
@@ -435,7 +444,7 @@ export function CalendarPage({
       <Modal open={Boolean(leisureDate)} title={language === 'ne' ? 'खाली समय मिलाउनुहोस्' : 'Plan some free time'} onClose={() => setLeisureDate('')} className="leisure-modal">
         <div className="leisure-modal-body">
           <header><span>🎲</span><div><p className="eyebrow">{language === 'ne' ? 'Aayoj सुझाव' : 'Aayoj ideas'}</p><h3>{leisureDate ? new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(`${leisureDate}T12:00:00`)) : ''}</h3></div></header>
-          <div className="leisure-ideas" role="list" aria-label={language === 'ne' ? 'खाली समयका सुझावहरू' : 'Free-time ideas'}>{leisureIdeas.map((idea) => <button className={leisureIdea.id === idea.id ? 'active' : ''} type="button" role="listitem" key={idea.id} onClick={() => chooseLeisure(idea)}><span>{idea.emoji}</span><strong>{language === 'ne' ? idea.ne : idea.en}</strong><small>{idea.minutes} min</small></button>)}</div>
+          <div className="leisure-ideas" role="list" aria-label={language === 'ne' ? 'खाली समयका सुझावहरू' : 'Free-time ideas'}>{leisureIdeas.map((idea) => <button className={leisureIdea.id === idea.id ? 'active' : ''} type="button" role="listitem" key={idea.id} onClick={() => { chooseLeisure(idea); if (idea.id === 'ludo') startLudo(); }}><span>{idea.emoji}</span><strong>{language === 'ne' ? idea.ne : idea.en}</strong><small>{idea.id === 'ludo' ? (language === 'ne' ? 'अफलाइन खेल्नुहोस्' : 'Play offline') : `${idea.minutes} min`}</small></button>)}</div>
           <div className="leisure-schedule">
             <label><span>{language === 'ne' ? 'सुरु समय' : 'Start time'}</span><input type="time" value={leisureTime} onChange={(event) => setLeisureTime(event.target.value)} /></label>
             <label><span>{language === 'ne' ? 'अवधि' : 'Duration'}</span><select value={leisureMinutes} onChange={(event) => setLeisureMinutes(Number(event.target.value))}>{[15,30,45,60,90,120].map((minutes) => <option value={minutes} key={minutes}>{minutes} min</option>)}</select></label>
@@ -444,6 +453,10 @@ export function CalendarPage({
           <button className="primary-button wide-button" type="button" onClick={saveLeisureBlock}>{language === 'ne' ? `${leisureIdea.emoji} पात्रोमा राख्नुहोस्` : `${leisureIdea.emoji} Add to calendar`}</button>
           <button className="text-button" type="button" onClick={() => { const date = leisureDate; setLeisureDate(''); if (date) onPlanDate(date); }}>{language === 'ne' ? 'यसको सट्टा AI बाट दिन योजना बनाउनुहोस्' : 'Plan the whole day with AI instead'}</button>
         </div>
+      </Modal>
+
+      <Modal open={ludoOpen} title={language === 'ne' ? 'Aayoj अफलाइन लुडो' : 'Aayoj Offline Ludo'} onClose={() => setLudoOpen(false)} className="ludo-modal">
+        <OfflineLudo language={language} onSchedule={() => { setLudoOpen(false); setLeisureIdea(leisureIdeas[0]); setLeisureMinutes(leisureIdeas[0].minutes); setLeisureDate(ludoDate || todayKey); }} />
       </Modal>
     </div>
   );
