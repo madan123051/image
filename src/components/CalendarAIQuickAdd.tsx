@@ -100,7 +100,7 @@ export function CalendarAIQuickAdd({ open, dateKey, data, userId, language, onCl
       <div className="calendar-ai-date">
         <BrandMark />
         <span><small>{language === 'ne' ? 'चयन गरिएको मिति' : 'Selected date'}</small><strong>{dateLabel}</strong></span>
-        <i aria-hidden="true">✦</i>
+          <i aria-hidden="true">◎</i>
       </div>
 
       {!response?.actions.length ? <>

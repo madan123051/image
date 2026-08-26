@@ -286,7 +286,7 @@ export function CalendarPage({
               </label>
             ))}
             <button className="text-button calendar-settings-link" type="button" onClick={onAddCalendar}>＋ Add calendar</button>
-            <div className="calendar-tip"><span>✦</span><p><strong>Smart scheduling</strong>Fixed appointments stay protected. Suggestions always require approval.</p></div>
+        <div className="calendar-tip"><span>◎</span><p><strong>Smart scheduling</strong>Fixed appointments stay protected. Suggestions always require approval.</p></div>
           </aside>
 
           <div className="calendar-canvas">

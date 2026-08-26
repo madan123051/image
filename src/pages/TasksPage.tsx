@@ -91,7 +91,7 @@ export function TasksPage({ tasks, events, routines, preferences, labels, onNewT
 
       <Modal open={Boolean(scheduleTask)} title={`Schedule “${scheduleTask?.title ?? ''}”`} onClose={() => setScheduleTask(null)}>
         <div className="schedule-dialog-body">
-          <div className="approval-note"><span>✦</span><p><strong>Free-time suggestions</strong>These slots avoid events, scheduled tasks, fixed routines, and past time. Choose one to confirm.</p></div>
+        <div className="approval-note"><span>◎</span><p><strong>Free-time suggestions</strong>These slots avoid events, scheduled tasks, fixed routines, and past time. Choose one to confirm.</p></div>
           {suggestions.length ? suggestions.map((slot) => (
             <button className="slot-option" type="button" key={slot.startDateTime} onClick={() => applySlot(slot)}>
               <span><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date(slot.startDateTime))}</strong><small>{new Date(slot.startDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(slot.endDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small></span><b>Use slot →</b>

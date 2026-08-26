@@ -8,7 +8,7 @@ const navigation: Array<{ id: AppSection; label: CopyKey; icon: string }> = [
   { id: 'today', label: 'today', icon: '⌂' },
   { id: 'calendar', label: 'calendar', icon: '▦' },
   { id: 'tasks', label: 'tasks', icon: '✓' },
-  { id: 'planner', label: 'planner', icon: '✦' },
+  { id: 'planner', label: 'planner', icon: '◎' },
   { id: 'reminders', label: 'reminders', icon: '◷' },
   { id: 'shared', label: 'shared', icon: '↗' },
   { id: 'insights', label: 'insights', icon: '⌁' },
@@ -63,7 +63,8 @@ export function AppShell({
           <BrandMark />
           <span>
             <strong>Aayoj</strong>
-            <small>Designed by Wildsaura</small>
+            <small className="brand-tagline">Calendar, Tasks &amp; AI Planner</small>
+            <small className="brand-byline">by Wildsaura</small>
           </span>
         </div>
         <button className="add-button sidebar-add" type="button" onClick={onAdd}>
@@ -88,7 +89,7 @@ export function AppShell({
         <header className="topbar">
           <button className="mobile-brand" type="button" onClick={() => onNavigate('today')} aria-label="Open Today">
             <BrandMark />
-            <span className="mobile-brand-copy"><strong>Aayoj</strong><small>Designed by Wildsaura</small></span>
+            <span className="mobile-brand-copy"><strong>Aayoj</strong><small>by Wildsaura</small></span>
           </button>
           <label className="search-box">
             <span aria-hidden="true">⌕</span>

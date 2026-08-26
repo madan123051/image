@@ -168,7 +168,7 @@ export function TodayPage({
           </section>
 
           <section className="content-panel focus-panel">
-            <span className="panel-icon">✦</span>
+          <span className="panel-icon">◎</span>
             <p className="eyebrow">Aayoj suggestion</p>
             <h3>{focusTask ? `Protect ${suggestedFocusMinutes} minutes for ${focusTask.title}` : 'Keep one clear focus block'}</h3>
             <p>{freeMinutes >= suggestedFocusMinutes

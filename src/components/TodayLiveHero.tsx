@@ -151,7 +151,7 @@ export function TodayLiveHero({
           <em>{snapshot ? 'Open-Meteo' : (language === 'ne' ? 'स्थान आवश्यक' : 'Location needed')}</em>
         </article>
         <article>
-          <span aria-hidden="true">✦</span>
+              <span aria-hidden="true">◎</span>
           <small>{language === 'ne' ? 'अर्को योजना' : 'Up next'}</small>
           <strong>{nextEventTime ?? formatDuration(freeMinutes)}</strong>
           <em>{nextEvent?.title ?? (language === 'ne' ? 'खाली समय' : 'Open time')}</em>

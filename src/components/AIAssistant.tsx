@@ -43,7 +43,7 @@ export function AIAssistant({ data, userId, language, onApply, onOpenPlanner }: 
     const result = onApply(response.actions);
     setApplyMessage(result.errors.length
       ? `${result.applied} applied · ${result.errors.join(' ')}`
-      : `${result.applied} change${result.applied === 1 ? '' : 's'} saved to Firebase.`);
+      : `${result.applied} change${result.applied === 1 ? '' : 's'} saved to your workspace.`);
     if (!result.errors.length) setResponse({ ...response, actions: [], requiresConfirmation: false });
   };
 
