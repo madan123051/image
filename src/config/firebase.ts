@@ -8,6 +8,7 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const firebaseOptions: FirebaseOptions = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -37,6 +38,7 @@ export interface FirebaseServices {
   app: FirebaseApp;
   auth: Auth;
   db: Firestore;
+  storage?: FirebaseStorage;
   persistentCache: boolean;
 }
 
@@ -65,7 +67,8 @@ export function getFirebaseServices(): Promise<FirebaseServices | null> {
     const auth = getAuth(app);
     await setPersistence(auth, browserLocalPersistence);
     const { db, persistentCache } = initializeDatabase(app);
-    return { app, auth, db, persistentCache };
+    const storage = firebaseOptions.storageBucket ? getStorage(app) : undefined;
+    return { app, auth, db, storage, persistentCache };
   })();
 
   return servicesPromise;

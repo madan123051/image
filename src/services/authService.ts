@@ -15,6 +15,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, setDoc, writeBatch, type Firestore } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { getFirebaseServices } from '../config/firebase';
 
 export interface AuthSession {
@@ -203,6 +204,22 @@ export async function updateFirebaseProfile(displayName: string, avatarUrl: stri
   await updateProfile(current, { displayName: displayName.trim(), photoURL: avatarUrl.trim() || null });
   await current.reload();
   return saveAuthenticatedProfile(current);
+}
+
+export async function uploadFirebaseAvatar(avatar: Blob): Promise<string> {
+  const services = await getFirebaseServices();
+  if (!services) throw new Error('Firebase storage is not configured.');
+  const current = services.auth.currentUser;
+  if (!current) throw new Error('Please reconnect your account.');
+  if (!services.storage) throw new Error('Profile photo storage is not configured.');
+
+  const avatarRef = ref(services.storage, `avatars/${current.uid}/profile.webp`);
+  await uploadBytes(avatarRef, avatar, {
+    cacheControl: 'public,max-age=300',
+    contentType: 'image/webp',
+  });
+  const downloadUrl = await getDownloadURL(avatarRef);
+  return `${downloadUrl}${downloadUrl.includes('?') ? '&' : '?'}v=${Date.now()}`;
 }
 
 export async function requestFirebasePasswordReset(email: string): Promise<void> {
