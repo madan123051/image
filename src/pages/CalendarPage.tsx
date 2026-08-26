@@ -6,6 +6,7 @@ import { getGregorianDateForNepaliDay, getNepaliDate, getNepaliMonthDetails, mov
 import { WeatherChip } from '../components/WeatherChip';
 import { Modal } from '../components/Modal';
 import { OfflineLudo } from '../components/OfflineLudo';
+import { CalendarSnakeGame } from '../components/CalendarSnakeGame';
 
 interface CalendarCell {
   date: Date;
@@ -36,6 +37,7 @@ const englishMonths = Array.from({ length: 12 }, (_, month) => new Intl.DateTime
 
 const leisureIdeas = [
   { id: 'ludo', emoji: '🎲', en: 'Play Ludo', ne: 'लुडो खेल्नुहोस्', minutes: 45, color: '#d98429' },
+  { id: 'snake', emoji: '🐍', en: 'Snake & Ladders', ne: 'सर्प र भर्‍याङ', minutes: 30, color: '#4d8b72' },
   { id: 'walk', emoji: '🚶', en: 'Take a walk', ne: 'हिँड्न जानुहोस्', minutes: 30, color: '#4d8b72' },
   { id: 'read', emoji: '📖', en: 'Read something', ne: 'केही पढ्नुहोस्', minutes: 30, color: '#7770a8' },
   { id: 'rest', emoji: '☕', en: 'Rest & recharge', ne: 'आराम गर्नुहोस्', minutes: 30, color: '#b96f5f' },
@@ -152,6 +154,7 @@ export function CalendarPage({
   const [leisureSaved, setLeisureSaved] = useState('');
   const [ludoOpen, setLudoOpen] = useState(false);
   const [ludoDate, setLudoDate] = useState('');
+  const [snakeDate, setSnakeDate] = useState('');
   const todayKey = toDateKey(new Date());
   const visibleEvents = useMemo(() => {
     const visibleIds = new Set(visibleCalendarIds);
@@ -270,6 +273,11 @@ export function CalendarPage({
     setLudoOpen(true);
   };
 
+  const startSnake = () => {
+    setSnakeDate(leisureDate);
+    setLeisureDate('');
+  };
+
   const saveLeisureBlock = () => {
     if (!leisureDate) return;
     const calendar = calendars.find((item) => item.visible && item.isPrivate) ?? calendars.find((item) => item.visible) ?? calendars[0];
@@ -349,7 +357,8 @@ export function CalendarPage({
           </div>
         </header>
 
-        <div className="calendar-body">
+        <div className={`calendar-body ${snakeDate ? 'game-mode' : ''}`}>
+          {snakeDate ? <CalendarSnakeGame dateKey={snakeDate} language={language} onClose={() => setSnakeDate('')} /> : <>
           <aside className="calendar-list-panel">
             <strong>My calendars</strong>
             {calendars.map((calendar) => (
@@ -438,13 +447,14 @@ export function CalendarPage({
               }) : <div className="empty-state"><span>☘</span><p>No upcoming events.</p></div>}
             </div>}
           </div>
+          </>}
         </div>
       </section>
 
       <Modal open={Boolean(leisureDate)} title={language === 'ne' ? 'खाली समय मिलाउनुहोस्' : 'Plan some free time'} onClose={() => setLeisureDate('')} className="leisure-modal">
         <div className="leisure-modal-body">
           <header><span>🎲</span><div><p className="eyebrow">{language === 'ne' ? 'Aayoj सुझाव' : 'Aayoj ideas'}</p><h3>{leisureDate ? new Intl.DateTimeFormat(language === 'ne' ? 'ne-NP' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(`${leisureDate}T12:00:00`)) : ''}</h3></div></header>
-          <div className="leisure-ideas" role="list" aria-label={language === 'ne' ? 'खाली समयका सुझावहरू' : 'Free-time ideas'}>{leisureIdeas.map((idea) => <button className={leisureIdea.id === idea.id ? 'active' : ''} type="button" role="listitem" key={idea.id} onClick={() => { chooseLeisure(idea); if (idea.id === 'ludo') startLudo(); }}><span>{idea.emoji}</span><strong>{language === 'ne' ? idea.ne : idea.en}</strong><small>{idea.id === 'ludo' ? (language === 'ne' ? 'अफलाइन खेल्नुहोस्' : 'Play offline') : `${idea.minutes} min`}</small></button>)}</div>
+          <div className="leisure-ideas" role="list" aria-label={language === 'ne' ? 'खाली समयका सुझावहरू' : 'Free-time ideas'}>{leisureIdeas.map((idea) => <button className={leisureIdea.id === idea.id ? 'active' : ''} type="button" role="listitem" key={idea.id} onClick={() => { chooseLeisure(idea); if (idea.id === 'ludo') startLudo(); if (idea.id === 'snake') startSnake(); }}><span>{idea.emoji}</span><strong>{language === 'ne' ? idea.ne : idea.en}</strong><small>{idea.id === 'ludo' || idea.id === 'snake' ? (language === 'ne' ? 'अफलाइन खेल्नुहोस्' : 'Play offline') : `${idea.minutes} min`}</small></button>)}</div>
           <div className="leisure-schedule">
             <label><span>{language === 'ne' ? 'सुरु समय' : 'Start time'}</span><input type="time" value={leisureTime} onChange={(event) => setLeisureTime(event.target.value)} /></label>
             <label><span>{language === 'ne' ? 'अवधि' : 'Duration'}</span><select value={leisureMinutes} onChange={(event) => setLeisureMinutes(Number(event.target.value))}>{[15,30,45,60,90,120].map((minutes) => <option value={minutes} key={minutes}>{minutes} min</option>)}</select></label>
