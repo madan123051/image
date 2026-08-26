@@ -153,7 +153,7 @@ export function AccountDialog({ open, user, isAnonymous, data, onClose }: Accoun
     }
   };
 
-  return <Modal open={open} title={isAnonymous ? 'Your account' : 'Profile'} onClose={onClose} className="account-modal">
+  return <Modal open={open} title="Your Aayoj account" onClose={onClose} className="account-modal">
     {view === 'overview' && !isAnonymous ? <form className="account-profile-form" onSubmit={submit}>
       <div className="account-profile-summary">
         <label className="avatar-picker">

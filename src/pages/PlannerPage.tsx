@@ -49,7 +49,7 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
     const result = onApply(proposal.actions);
     setApplied(result.errors.length
       ? `${result.applied} applied. ${result.errors.join(' ')}`
-      : `${result.applied} approved change${result.applied === 1 ? '' : 's'} saved to Firebase.`);
+      : `${result.applied} approved change${result.applied === 1 ? '' : 's'} saved to your workspace.`);
     if (!result.errors.length) setProposal({ ...proposal, actions: [], requiresConfirmation: false });
   };
 
@@ -61,12 +61,12 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
     <div className="planner-layout">
       <section className="content-panel planner-prompt-panel">
         <header className="planner-prompt-title">
-          <span className="planner-orbit">✦</span>
+          <span className="planner-orbit">◎</span>
           <div><small>Tell Aayoj in one sentence</small><h2>What are we planning?</h2></div>
         </header>
         <textarea aria-label="Planning request" value={prompt} onChange={(event) => setPrompt(event.target.value)} rows={3} maxLength={2_000} placeholder="Plan, create, update, move, or remove…" />
         <div className="prompt-ideas" aria-label="Quick planning prompts">{promptIdeas.map((idea) => <button type="button" key={idea} onClick={() => setPrompt(idea)}>{idea}</button>)}</div>
-        <button className="primary-button wide-button" type="button" onClick={generate} disabled={loading || !prompt.trim()}>{loading ? 'Assistant is checking your schedule…' : '✦ Generate safe proposal'}</button>
+        <button className="primary-button wide-button" type="button" onClick={generate} disabled={loading || !prompt.trim()}>{loading ? 'Assistant is checking your schedule…' : '◎ Generate safe proposal'}</button>
         {error ? <p className="form-error" role="alert">{error}</p> : null}
         <div className="planner-context">
           <div><strong>{events.length}</strong><span>events considered</span></div>
@@ -77,7 +77,7 @@ export function PlannerPage({ data, userId, labels, onApply }: PlannerPageProps)
 
       <section className={`content-panel proposal-panel ${proposal ? 'has-proposal' : 'is-empty'}`}>
         <header className="section-heading"><div><p className="eyebrow">Approval preview</p><h2>{proposal ? proposal.summary : 'Waiting for your command'}</h2></div>{proposal ? <span className="status-pill preview">preview</span> : null}</header>
-        {!proposal ? <div className="empty-state planner-empty"><span>✦</span><p>Your assistant will return a typed proposal. Nothing changes until you press Apply.</p></div> : <>
+        {!proposal ? <div className="empty-state planner-empty"><span>◎</span><p>Your assistant will return a typed proposal. Nothing changes until you press Apply.</p></div> : <>
           <p className="proposal-summary">{proposal.reply}</p>
           {proposal.actions.length ? <AssistantActionList actions={proposal.actions} /> : <div className="empty-state"><span>✓</span><p>No calendar change is needed for this answer.</p></div>}
           {proposal.warnings.map((warning) => <div className="approval-note" key={warning}><span>!</span><p><strong>Review note</strong>{warning}</p></div>)}

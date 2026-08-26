@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CalendarDefinition, CalendarEvent } from '../types/domain';
 import type { CopyKey } from '../i18n';
+import { Modal } from '../components/Modal';
 
 interface SharedPageProps {
   calendars: CalendarDefinition[];
@@ -27,6 +28,7 @@ export function SharedPage({ calendars, events, labels, userId, onNewShared, onM
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [notice, setNotice] = useState('');
   const [inviteHandled, setInviteHandled] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const selected = shared.find((calendar) => calendar.id === selectedId) ?? shared[0];
   const inviteLink = useMemo(() => selected ? getInviteLink(selected) : '', [selected]);
   const incomingInvite = useMemo(() => {
@@ -39,7 +41,7 @@ export function SharedPage({ calendars, events, labels, userId, onNewShared, onM
 
   useEffect(() => {
     let active = true;
-    if (!inviteLink) {
+    if (!inviteLink || !qrOpen) {
       setQrDataUrl('');
       return () => { active = false; };
     }
@@ -52,7 +54,7 @@ export function SharedPage({ calendars, events, labels, userId, onNewShared, onM
         if (active) setQrDataUrl(value);
       });
     return () => { active = false; };
-  }, [inviteLink]);
+  }, [inviteLink, qrOpen]);
 
   const copyLink = async () => {
     try {
@@ -124,15 +126,11 @@ export function SharedPage({ calendars, events, labels, userId, onNewShared, onM
         <span className="share-symbol" aria-hidden="true">↗</span>
         <p className="eyebrow">Quick invite</p>
         <h2>Share {selected.name}</h2>
-        <p>Send the link anywhere or let someone scan the QR code from your screen.</p>
+        <p>Send one private link. Generate the QR only when someone is ready to scan, so this page stays compact.</p>
         {shared.length > 1 ? <div className="share-calendar-tabs" aria-label="Choose calendar">{shared.map((calendar) => <button className={calendar.id === selected.id ? 'active' : ''} type="button" key={calendar.id} onClick={() => { setSelectedId(calendar.id); setNotice(''); }}><i style={{ background: calendar.color }} />{calendar.name}</button>)}</div> : null}
         <label className="share-link-field"><span>Invite link</span><div><input readOnly value={inviteLink} aria-label="Invite link" /><button type="button" onClick={() => void copyLink()}>Copy</button></div></label>
-        <div className="share-actions"><button className="primary-button" type="button" onClick={() => void shareLink()}>↗ Share link</button><button className="secondary-button" type="button" onClick={downloadQr}>↓ Download QR</button></div>
+        <div className="share-actions"><button className="primary-button" type="button" onClick={() => void shareLink()}>↗ Share link</button><button className="secondary-button" type="button" onClick={() => setQrOpen(true)}>▦ Generate QR</button></div>
         {notice ? <p className="share-notice" role="status">✓ {notice}</p> : null}
-      </div>
-      <div className="qr-card">
-        {qrDataUrl ? <img src={qrDataUrl} alt={`QR code for the ${selected.name} calendar invite`} /> : <span className="qr-loading">Creating QR…</span>}
-        <strong>Scan to join</strong><small>{selected.name} · Aayoj</small>
       </div>
     </section> : null}
 
@@ -147,5 +145,15 @@ export function SharedPage({ calendars, events, labels, userId, onNewShared, onM
       })}
       {!shared.length ? <article className="content-panel shared-card shared-empty-card"><span>↗</span><h2>No shared calendars yet</h2><p>Create one for family, a trip, a project, or any group schedule. Its invite link and QR code will be ready instantly.</p><button className="primary-button" type="button" onClick={onNewShared}>Create your first shared calendar</button></article> : null}
     </div>
+    <Modal open={qrOpen} title={selected ? `QR invite · ${selected.name}` : 'QR invite'} onClose={() => setQrOpen(false)} className="qr-modal">
+      <div className="qr-modal-body">
+        <div className="qr-card">
+          {qrDataUrl && selected ? <img src={qrDataUrl} alt={`QR code for the ${selected.name} calendar invite`} /> : <span className="qr-loading">Creating secure QR…</span>}
+          <strong>Scan to join</strong><small>{selected?.name} · Aayoj by Wildsaura</small>
+        </div>
+        <p>Open the camera on another phone and point it at this code.</p>
+        <button className="secondary-button wide-button" type="button" onClick={downloadQr} disabled={!qrDataUrl}>↓ Download QR image</button>
+      </div>
+    </Modal>
   </div>;
 }

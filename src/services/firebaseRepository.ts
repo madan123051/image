@@ -49,7 +49,7 @@ function withoutUndefined<T>(value: T): T {
 }
 
 function toError(error: unknown): Error {
-  return error instanceof Error ? error : new Error('Firebase synchronization failed.');
+  return error instanceof Error ? error : new Error('Cloud synchronization failed.');
 }
 
 export class FirestoreLifePlannerRepository implements LifePlannerRepository {

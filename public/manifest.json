@@ -1,7 +1,7 @@
 {
   "short_name": "Aayoj",
-  "name": "Aayoj — Smart Life Planner",
-  "description": "A calm bilingual planner for calendars, tasks, routines, reminders and approval-first assistance.",
+  "name": "Aayoj — Calendar & AI Planner",
+  "description": "Calendar, Tasks & AI Planner by Wildsaura.",
   "id": "/",
   "start_url": "/#/today",
   "display": "standalone",

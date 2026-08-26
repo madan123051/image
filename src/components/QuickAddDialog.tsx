@@ -96,7 +96,7 @@ export function QuickAddDialog({
       <button type="button" onClick={() => choose(onOpenRoutines)}><span>↻</span><strong>{labels.newRoutine}</strong><small>Flexible or fixed</small></button>
     </div>
     <div className="natural-add">
-      <div className="natural-heading"><span>✦</span><div><strong>Describe it naturally</strong><small>Local parser now · any AI provider later</small></div></div>
+          <div className="natural-heading"><span>◎</span><div><strong>Describe it naturally</strong><small>Local parser now · any AI provider later</small></div></div>
       <div className="natural-input"><textarea rows={3} value={input} onChange={(event) => { setInput(event.target.value); setPreview(null); }} placeholder={labels.naturalPlaceholder} /><button className="primary-button" type="button" onClick={parse} disabled={loading || !input.trim()}>{loading ? 'Parsing…' : labels.preview}</button></div>
       {preview && <div className="parse-preview">
         <header><span>✓</span><div><strong>Review before saving</strong><small>{Math.round(preview.confidence * 100)}% local parse confidence</small></div></header>

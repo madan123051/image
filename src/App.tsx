@@ -17,7 +17,7 @@ import { CalendarPage } from './pages/CalendarPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { RemindersPage } from './pages/RemindersPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { SettingsPage, type SettingsRoute } from './pages/SettingsPage';
 import { SharedPage } from './pages/SharedPage';
 import { TasksPage } from './pages/TasksPage';
 import { TodayPage } from './pages/TodayPage';
@@ -30,14 +30,20 @@ import { toDateKey } from './utils/date';
 const sections: AppSection[] = ['today', 'calendar', 'tasks', 'planner', 'reminders', 'shared', 'insights', 'settings'];
 
 function sectionFromHash(): AppSection {
-  const candidate = window.location.hash.replace('#/', '') as AppSection;
+  const candidate = window.location.hash.replace('#/', '').split('/')[0] as AppSection;
   return sections.includes(candidate) ? candidate : 'today';
+}
+
+function settingsRouteFromHash(): SettingsRoute {
+  const candidate = window.location.hash.replace('#/settings/', '') as SettingsRoute;
+  return ['general', 'planning', 'notifications', 'shared', 'about', 'terms', 'privacy', 'help'].includes(candidate) ? candidate : 'general';
 }
 
 function App() {
   const store = usePlannerStore();
   const labels = getCopy(store.language);
   const [section, setSection] = useState<AppSection>(sectionFromHash);
+  const [settingsRoute, setSettingsRoute] = useState<SettingsRoute>(settingsRouteFromHash);
   const [anchor, setAnchor] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -79,7 +85,10 @@ function App() {
   const results = useMemo(() => searchAll(store.data, store.userId, searchQuery), [store.data, store.userId, searchQuery]);
 
   useEffect(() => {
-    const onHashChange = () => setSection(sectionFromHash());
+    const onHashChange = () => {
+      setSection(sectionFromHash());
+      setSettingsRoute(settingsRouteFromHash());
+    };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
@@ -241,7 +250,7 @@ function App() {
     if (section === 'reminders') return <RemindersPage reminders={reminders} routines={routines} labels={labels} onAddReminder={newReminder} onEditReminder={editReminder} onCompleteReminder={store.completeReminder} onSnoozeReminder={store.snoozeReminder} onAddRoutine={newRoutine} onEditRoutine={editRoutine} onToggleRoutine={store.toggleRoutine} />;
     if (section === 'shared') return <SharedPage calendars={calendars} events={events} labels={labels} userId={store.userId} onNewShared={() => newCalendar(true)} onManage={manageCalendar} onJoin={store.saveCalendar} />;
     if (section === 'insights') return <InsightsPage events={events} tasks={tasks} routines={routines} calendars={calendars} labels={labels} />;
-    return <SettingsPage preferences={preferences} labels={labels} sync={store.sync} persistentCache={store.persistentCache} notificationPermission={notificationPermission} user={user} isAnonymous={store.isAnonymous} sharedCalendarCount={calendars.filter((calendar) => !calendar.isPrivate).length} onLanguage={store.setLanguage} onTheme={store.setTheme} onPreferences={store.savePreferences} onEnableNotifications={enableNotifications} onOpenAccount={() => setAccountDialogOpen(true)} />;
+    return <SettingsPage preferences={preferences} labels={labels} sync={store.sync} persistentCache={store.persistentCache} notificationPermission={notificationPermission} user={user} isAnonymous={store.isAnonymous} sharedCalendarCount={calendars.filter((calendar) => !calendar.isPrivate).length} route={settingsRoute} onLanguage={store.setLanguage} onTheme={store.setTheme} onPreferences={store.savePreferences} onEnableNotifications={enableNotifications} onOpenAccount={() => setAccountDialogOpen(true)} />;
   })();
 
   return <>

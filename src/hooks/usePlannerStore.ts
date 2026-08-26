@@ -97,7 +97,7 @@ export function usePlannerStore(): PlannerStore {
   }, []);
 
   const reportError = useCallback((error: unknown) => {
-    const message = error instanceof Error ? error.message : 'Firebase synchronization failed.';
+      const message = error instanceof Error ? error.message.replace(/Firebase/gi, 'Cloud') : 'Cloud synchronization failed.';
     setSync({ mode: 'error', message, hasPendingWrites: false });
   }, []);
 
