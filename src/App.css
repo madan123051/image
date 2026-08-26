@@ -253,16 +253,54 @@ button { color: inherit; }
 .switch-control { display: grid; grid-template-columns: 34px; justify-items: center; gap: 3px; cursor: pointer; } .switch-control input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .switch-control > span { position: relative; width: 34px; height: 19px; border-radius: 999px; background: var(--line); transition: background .2s ease; } .switch-control > span::after { position: absolute; top: 3px; left: 3px; width: 13px; height: 13px; border-radius: 50%; background: var(--paper); box-shadow: 0 1px 4px rgba(0,0,0,.18); content: ''; transition: transform .2s ease; }
 .switch-control input:checked + span { background: var(--forest-700); } .switch-control input:checked + span::after { transform: translateX(15px); } .switch-control input:focus-visible + span { outline: 2px solid var(--amber); outline-offset: 2px; } .switch-control small { color: var(--muted); font-size: 7px; }
+.shared-page { overflow-x: clip; }
+.incoming-invite { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 15px; margin-bottom: 20px; padding: 17px 19px; border: 1px solid #e8c37f; border-radius: 15px; background: var(--amber-soft); box-shadow: var(--shadow); }
+.incoming-invite > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: var(--amber); color: var(--forest-900); font-size: 21px; font-weight: 900; }
+.incoming-invite h2 { margin: 2px 0; font: 600 20px Georgia,serif; }
+.incoming-invite p { margin: 0; color: var(--muted); font-size: 9px; }
+.incoming-invite .eyebrow { color: #976214; font-size: 7px; }
+.incoming-invite > strong { color: var(--forest-700); font-size: 10px; }
+.share-hub { display: grid; grid-template-columns: minmax(0,1fr) 230px; gap: clamp(24px,5vw,70px); align-items: center; margin-bottom: 20px; padding: clamp(24px,4vw,44px); background: linear-gradient(135deg,var(--forest-900),#174f3f); color: #fff; }
+.share-hub-copy { min-width: 0; }
+.share-symbol { display: grid; width: 42px; height: 42px; place-items: center; margin-bottom: 18px; border-radius: 13px; background: var(--amber); color: var(--forest-900); font-size: 22px; font-weight: 900; }
+.share-hub .eyebrow { color: #f4ad38; }
+.share-hub h2 { margin: 6px 0 8px; font: 500 clamp(27px,3vw,38px) Georgia,serif; }
+.share-hub-copy > p:not(.eyebrow,.share-notice) { max-width: 540px; margin: 0; color: #bfd2c9; font-size: 12px; line-height: 1.6; }
+.share-calendar-tabs { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+.share-calendar-tabs button { display: inline-flex; min-height: 31px; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid rgba(255,255,255,.16); border-radius: 999px; background: rgba(255,255,255,.06); color: #dbe8e2; cursor: pointer; font-size: 9px; }
+.share-calendar-tabs button.active { border-color: #f4ad38; background: rgba(244,173,56,.14); color: #fff; }
+.share-calendar-tabs i { width: 7px; height: 7px; border-radius: 50%; }
+.share-link-field { display: grid; gap: 7px; margin-top: 21px; }
+.share-link-field > span { color: #b9ccc3; font-size: 8px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.share-link-field > div { display: flex; min-width: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.19); border-radius: 11px; background: rgba(255,255,255,.08); }
+.share-link-field input { min-width: 0; height: 42px; flex: 1; padding: 0 12px; border: 0; outline: 0; background: transparent; color: #eef7f2; font-size: 10px; text-overflow: ellipsis; }
+.share-link-field button { min-width: 64px; border: 0; border-left: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08); color: #fff; cursor: pointer; font-size: 9px; font-weight: 850; }
+.share-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 13px; }
+.share-hub .primary-button { background: var(--amber); color: var(--forest-900); }
+.share-hub .secondary-button { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.07); color: #fff; }
+.share-notice { margin: 12px 0 0; color: #bfe8d5; font-size: 9px; }
+.qr-card { display: grid; justify-items: center; padding: 15px 15px 18px; border: 1px solid rgba(255,255,255,.16); border-radius: 20px; background: #fffdf7; box-shadow: 0 18px 42px rgba(0,0,0,.2); color: var(--ink); text-align: center; transform: rotate(1.5deg); }
+.qr-card img,.qr-loading { display: grid; width: 100%; aspect-ratio: 1; place-items: center; border-radius: 12px; object-fit: contain; }
+.qr-loading { color: var(--muted); font-size: 9px; }
+.qr-card strong { margin-top: 9px; font: 600 18px Georgia,serif; }
+.qr-card small { margin-top: 3px; color: var(--muted); font-size: 8px; }
 .shared-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
-.member-stack button { display: grid; width: 31px; height: 31px; place-items: center; margin-left: -7px; border: 2px solid var(--paper); border-radius: 50%; background: var(--forest-800); color: #fff; cursor: pointer; font-size: 9px; }
 .shared-empty-card { align-content: center; min-height: 220px; text-align: center; } .shared-empty-card > span { color: var(--amber); font-size: 34px; } .shared-empty-card h2 { margin: 10px 0 5px; }
 .shared-card { padding: 22px; } .shared-card header { display: flex; align-items: center; gap: 12px; }
 .shared-card header > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; color: #fff; font-weight: 900; } .shared-card header > div { flex: 1; }
 .shared-card h2 { margin: 0; font: 500 22px Georgia,serif; } .shared-card p { margin: 3px 0 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
-.member-stack { display: flex; margin: 25px 0; } .member-stack > * { display: grid; width: 31px; height: 31px; place-items: center; margin-left: -5px; border: 2px solid var(--paper); border-radius: 50%; background: var(--forest-100); color: var(--forest-700); font-size: 9px; font-style: normal; } .member-stack > *:first-child { margin-left: 0; }
+.shared-link-status { display: flex; align-items: center; gap: 11px; margin: 24px 0; padding: 12px; border-radius: 11px; background: var(--canvas); }
+.shared-link-status > span { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border-radius: 9px; background: var(--forest-100); color: var(--forest-700); font-weight: 900; }
+.shared-link-status > div { display: grid; gap: 2px; }
+.shared-link-status strong { font-size: 10px; }
+.shared-link-status small { color: var(--muted); font-size: 8px; }
 .shared-card footer { display: flex; align-items: center; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--line); }
 .shared-card footer > span { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; } .shared-card footer i { width: 7px; height: 7px; border-radius: 50%; }
-.invite-card { display: grid; place-items: center; align-content: center; min-height: 235px; text-align: center; } .invite-card > span { font-size: 30px; color: var(--amber); } .invite-card p { max-width: 350px; } .invite-card button { margin-top: 15px; }
+.calendar-link-note { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--forest-100); }
+.calendar-link-note > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border-radius: 10px; background: var(--forest-800); color: #fff; font-size: 18px; }
+.calendar-link-note > div { display: grid; gap: 3px; }
+.calendar-link-note strong { font-size: 10px; }
+.calendar-link-note small { color: var(--muted); font-size: 8px; line-height: 1.45; }
 .insight-kpis { grid-template-columns: repeat(4,1fr); } .insight-kpis small { margin-top: 6px; color: var(--muted); font-size: 8px; }
 .period-select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); }
 .insight-grid { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(260px,.6fr); gap: 22px; }
@@ -408,6 +446,7 @@ button { color: inherit; }
   .calendar-page { padding-inline: 12px; } .calendar-toolbar { align-items: flex-start; flex-direction: column; } .segmented-control { width: 100%; } .segmented-control button { flex: 1; }
   .month-cell { min-height: 90px; padding: 5px; } .event-chip { padding-inline: 4px; } .event-chip span { font-size: 7px; } .activity-emoji { width: 22px; height: 22px; border-radius: 8px; font-size: 13px; } .activity-emoji + .activity-emoji { margin-left: -7px; } .activity-count { height: 19px; min-width: 19px; }
   .settings-layout { grid-template-columns: 1fr; } .settings-nav { display: flex; overflow-x: auto; } .settings-nav button { white-space: nowrap; }
+  .share-hub { grid-template-columns: minmax(0,1fr) 190px; gap: 24px; }
 }
 @media (max-width: 560px) {
   .mobile-brand-copy { display: none; }
@@ -424,6 +463,18 @@ button { color: inherit; }
   .task-summary,.insight-kpis { grid-template-columns: 1fr; } .task-summary > div,.insight-kpis > div { grid-template-columns: 55px 1fr; align-items: center; border-right: 0; border-bottom: 1px solid var(--line); } .task-summary > div:last-child,.insight-kpis > div:last-child { border-bottom: 0; } .task-summary span,.insight-kpis span { margin: 0; } .insight-kpis small { grid-column: 2; }
   .task-row { align-items: flex-start; padding: 12px 0; } .task-main { display: grid; padding: 0; } .task-meta { justify-content: flex-start; margin-top: 7px; } .schedule-button { align-self: center; font-size: 0; } .schedule-button::after { content: '◷'; font-size: 13px; }
   .planner-page { padding-inline: 14px; } .planner-heading { gap: 9px; margin-bottom: 17px; } .planner-heading h1 { margin-block: 3px; font-size: 34px; } .planner-heading p:not(.eyebrow) { font-size: 11px; line-height: 1.45; } .assistant-provider { padding: 6px 9px; font-size: 8px; } .planner-layout { gap: 12px; } .planner-prompt-panel,.proposal-panel { min-height: auto; padding: 15px; } .planner-prompt-title { margin-bottom: 10px; } .planner-orbit { width: 34px; height: 34px; border-radius: 10px; } .planner-prompt-panel h2 { font-size: 20px; } .planner-prompt-panel textarea { min-height: 84px; } .prompt-ideas { display: flex; overflow-x: auto; margin: 9px -15px 12px; padding: 0 15px 3px; scrollbar-width: none; } .prompt-ideas::-webkit-scrollbar { display: none; } .prompt-ideas button { max-width: 255px; flex: 0 0 auto; border-radius: 999px; } .planner-context { margin-top: 14px; padding-top: 12px; } .planner-context strong { font-size: 17px; } .proposal-panel.is-empty { min-height: 135px; } .planner-empty { min-height: 90px; padding: 12px; } .proposal-actions { display: grid; grid-template-columns: repeat(2,1fr); } .proposal-actions .primary-button { grid-column: 1 / -1; } .shared-grid { grid-template-columns: 1fr; }
+  .shared-page { padding-inline: 14px; }
+  .incoming-invite { grid-template-columns: auto minmax(0,1fr); padding: 15px; }
+  .incoming-invite .primary-button,.incoming-invite > strong { grid-column: 1 / -1; width: 100%; text-align: center; }
+  .share-hub { grid-template-columns: 1fr; gap: 22px; padding: 20px; }
+  .share-symbol { margin-bottom: 14px; }
+  .share-hub h2 { font-size: 28px; }
+  .share-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .share-actions button { width: 100%; padding-inline: 8px; }
+  .qr-card { width: min(230px,100%); justify-self: center; box-sizing: border-box; transform: none; }
+  .shared-card { min-width: 0; padding: 17px; }
+  .shared-card header > div { min-width: 0; }
+  .shared-card h2,.shared-card p { overflow-wrap: anywhere; }
   .reminder-list,.routine-panel { padding: 17px; } .reminder-row { grid-template-columns: 36px minmax(0,1fr) auto; } .channel-list { display: none; } .row-actions { display: grid; }
   .setting-row,.provider-row { align-items: flex-start; flex-direction: column; gap: 8px; padding: 13px 0; } .setting-row select,.setting-row input,.setting-row .inline-fields { width: 100%; } .setting-row .inline-fields input { width: 50%; }
   .notification-popover { position: fixed; top: 56px; right: 12px; left: 12px; width: auto; }

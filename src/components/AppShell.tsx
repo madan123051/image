@@ -10,7 +10,7 @@ const navigation: Array<{ id: AppSection; label: CopyKey; icon: string }> = [
   { id: 'tasks', label: 'tasks', icon: '✓' },
   { id: 'planner', label: 'planner', icon: '✦' },
   { id: 'reminders', label: 'reminders', icon: '◷' },
-  { id: 'shared', label: 'shared', icon: '♧' },
+  { id: 'shared', label: 'shared', icon: '↗' },
   { id: 'insights', label: 'insights', icon: '⌁' },
   { id: 'settings', label: 'settings', icon: '⚙' },
 ];

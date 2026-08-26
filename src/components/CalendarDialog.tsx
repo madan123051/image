@@ -17,10 +17,6 @@ function createId(prefix: string): string {
   return `${prefix}_${typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(36).slice(2)}`}`;
 }
 
-function memberLines(members: CalendarMember[] | undefined): string {
-  return (members ?? []).map((member) => `${member.email}, ${member.role}`).join('\n');
-}
-
 export function parseCalendarMembers(value: string): CalendarMember[] {
   const seen = new Set<string>();
   return value.split(/\r?\n/).flatMap((line) => {
@@ -42,8 +38,6 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
   const [name, setName] = useState('');
   const [color, setColor] = useState('#2d7c65');
   const [shared, setShared] = useState(defaultShared);
-  const [members, setMembers] = useState('');
-  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [inviteCode, setInviteCode] = useState('');
 
@@ -52,20 +46,11 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
     setName(calendar?.name ?? (defaultShared ? 'Shared calendar' : 'New calendar'));
     setColor(calendar?.color ?? (defaultShared ? '#bd6a5c' : '#2d7c65'));
     setShared(calendar ? !calendar.isPrivate : defaultShared);
-    setMembers(memberLines(calendar?.members));
-    setMessage('');
     setError('');
     setInviteCode(calendar?.inviteCode ?? createId('invite'));
   }, [calendar, defaultShared, open]);
-  const inviteText = `Join my “${name || 'Aayoj'}” calendar. Invitation code: ${inviteCode}`;
-
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const parsedMembers = shared ? parseCalendarMembers(members) : [];
-    if (shared && members.trim() && !parsedMembers.length) {
-      setError('Add one valid email per line. Optional role: editor or viewer.');
-      return;
-    }
     onSave({
       id: calendar?.id ?? createId('calendar'),
       userId,
@@ -75,19 +60,10 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
       visible: calendar?.visible ?? true,
       isPrivate: !shared,
       role: calendar?.role ?? 'owner',
-      members: parsedMembers,
+      members: shared ? calendar?.members ?? [] : [],
       inviteCode: shared ? inviteCode : null,
     });
     onClose();
-  };
-
-  const copyInvite = async () => {
-    try {
-      await navigator.clipboard.writeText(inviteText);
-      setMessage('Invitation copied.');
-    } catch {
-      setError('Clipboard access was blocked. Use Email invitation instead.');
-    }
   };
 
   const remove = () => {
@@ -105,9 +81,7 @@ export function CalendarDialog({ open, calendar, defaultShared, userId, eventCou
       <label className="field full-field"><span>Calendar name</span><input autoFocus value={name} onChange={(event) => setName(event.target.value)} minLength={1} maxLength={120} required /></label>
       <label className="field"><span>Color</span><input type="color" value={color} onChange={(event) => setColor(event.target.value)} /></label>
       <label className="toggle-field calendar-share-toggle"><input type="checkbox" checked={shared} onChange={(event) => setShared(event.target.checked)} /><span>Share with people</span></label>
-      {shared ? <label className="field full-field"><span>Members</span><textarea rows={5} value={members} onChange={(event) => setMembers(event.target.value)} placeholder={'friend@example.com, editor\nfamily@example.com, viewer'} /><small>One email per line. Add “editor” or “viewer” after a comma. Up to 5 members.</small></label> : null}
-      {shared && calendar ? <div className="calendar-invite-actions full-field"><button className="secondary-button" type="button" onClick={() => void copyInvite()}>Copy invitation</button><a className="secondary-button" href={`mailto:?subject=${encodeURIComponent(`Aayoj calendar: ${name}`)}&body=${encodeURIComponent(inviteText)}`}>Email invitation</a></div> : null}
-      {message ? <p className="success-note full-field">{message}</p> : null}
+      {shared ? <div className="calendar-link-note full-field"><span aria-hidden="true">↗</span><div><strong>Link and QR sharing</strong><small>{calendar ? 'Your invite link and QR code are available on the Shared page.' : 'Save this calendar, then share it instantly by link or QR code.'}</small></div></div> : null}
       {error ? <p className="form-error full-field" role="alert">{error}</p> : null}
       <footer className="modal-actions full-field">{calendar ? <button className="danger-button" type="button" onClick={remove} disabled={eventCount > 0} title={eventCount > 0 ? 'Move or delete its events first' : undefined}>Delete</button> : null}<span className="action-spacer" /><button className="secondary-button" type="button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit">{calendar ? 'Save changes' : 'Create calendar'}</button></footer>
     </form>
